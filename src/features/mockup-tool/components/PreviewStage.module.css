@@ -1,86 +1,123 @@
+/* ─── Workspace ──────────────────────────────────────────────────── */
 .workspace {
-  display: grid;
-  align-content: start;
-  gap: 12px;
-  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+  background: var(--bg-base);
 }
 
+/* ─── Workspace top bar ──────────────────────────────────────────── */
 .workspaceTop {
   display: flex;
-  align-items: end;
+  align-items: center;
   justify-content: space-between;
-  gap: 18px;
+  gap: 16px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+  background: var(--bg-base);
 }
 
 .workspaceTop div {
-  display: grid;
-  gap: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .workspaceTop strong {
-  font-size: 1rem;
-  color: #111827;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
 }
 
-.workspaceTop span,
+.workspaceTop span {
+  font-size: 0.78rem;
+  color: var(--text-soft);
+}
+
 .workspaceTop p {
-  color: #667085;
+  font-size: 0.8rem;
+  color: var(--text-soft);
+  max-width: 32ch;
+  line-height: 1.45;
+  text-align: right;
 }
 
-.workspaceTop p {
-  margin: 0;
-  max-width: 36ch;
-  line-height: 1.5;
-}
-
+/* ─── Canvas area ────────────────────────────────────────────────── */
 .canvas {
+  flex: 1;
   overflow: auto;
-  padding-bottom: 8px;
+  padding: 28px 20px 40px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
 }
 
+/* ─── Board: the rounded frame container ─────────────────────────── */
 .board {
   min-width: max-content;
-  padding: 18px;
-  border: 1px solid #dbe3ee;
-  border-radius: 24px;
-  background: #f8fafc;
+  padding: 20px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 28px;
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-md);
 }
 
+/* ─── Track: the horizontal flex of slide cards ──────────────────── */
 .track {
   display: flex;
   align-items: stretch;
   width: max-content;
-  padding: 6px;
 }
 
+/* ─── Slide card ─────────────────────────────────────────────────── */
 .slideCard {
   position: relative;
-  width: 292px;
-  min-height: 660px;
-  display: grid;
-  align-content: start;
-  gap: 14px;
-  padding: 18px 18px 22px;
-  border: 1px solid rgba(129, 141, 168, 0.24);
-  border-radius: 28px;
+  width: 280px;
+  min-height: 620px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 18px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 24px;
   overflow: hidden;
   text-align: left;
-  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition:
+    box-shadow var(--t-mid),
+    border-color var(--t-mid),
+    transform var(--t-mid);
+  cursor: pointer;
+}
+
+.slideCard:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 32px 80px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .slideCard[data-active="true"] {
-  border-color: #90a7ff;
+  border-color: rgba(124, 108, 255, 0.45);
   box-shadow:
-    0 0 0 4px rgba(111, 84, 255, 0.1),
-    0 20px 60px rgba(15, 23, 42, 0.12);
+    0 0 0 2px rgba(124, 108, 255, 0.25),
+    0 32px 80px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
+/* ─── Decorations ────────────────────────────────────────────────── */
 .decoration {
   position: absolute;
-  border-radius: 999px;
+  border-radius: 50%;
   pointer-events: none;
 }
 
+/* ─── Card layers ────────────────────────────────────────────────── */
 .cardHeader,
 .copy,
 .deviceWrap {
@@ -88,51 +125,67 @@
   z-index: 1;
 }
 
+/* ─── Badge ──────────────────────────────────────────────────────── */
 .badge {
   display: inline-flex;
-  padding: 8px 12px;
+  padding: 5px 11px;
   border-radius: 999px;
   border: 1px solid;
-  font-size: 0.76rem;
+  font-size: 0.68rem;
   font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  width: fit-content;
 }
 
+/* ─── Copy ───────────────────────────────────────────────────────── */
 .copy {
-  display: grid;
-  gap: 10px;
-}
-
-.copy h3,
-.copy p {
-  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .copy h3 {
-  font-size: 2.35rem;
-  line-height: 0.95;
+  font-size: clamp(1.7rem, 3vw, 2.2rem);
+  line-height: 1.0;
   letter-spacing: -0.05em;
+  font-weight: 900;
 }
 
 .copy p {
-  font-size: 1rem;
+  font-size: 0.9rem;
   line-height: 1.5;
+  opacity: 0.8;
 }
 
+/* ─── Device wrap ────────────────────────────────────────────────── */
 .deviceWrap {
-  display: grid;
-  align-items: end;
-  justify-items: center;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
   margin-top: auto;
-  padding-top: 8px;
+  padding-top: 6px;
+  flex: 1;
 }
 
-.deviceWrap :global(.phone) {
-  width: min(240px, 100%);
-}
-
+/* ─── Responsive ─────────────────────────────────────────────────── */
 @media (max-width: 1180px) {
   .workspaceTop {
     flex-direction: column;
-    align-items: start;
+    align-items: flex-start;
+  }
+
+  .workspaceTop p {
+    text-align: left;
+  }
+
+  .workspace {
+    height: auto;
+    overflow: visible;
+  }
+
+  .canvas {
+    overflow: visible;
+    padding: 20px 16px 32px;
   }
 }

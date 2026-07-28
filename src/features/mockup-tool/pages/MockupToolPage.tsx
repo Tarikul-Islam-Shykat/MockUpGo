@@ -16,7 +16,11 @@ import styles from "./MockupToolPage.module.css";
 const initialTheme = mockupThemes[0];
 const maxSlides = 5;
 
-export function MockupToolPage() {
+type MockupToolPageProps = {
+  onGoHome?: () => void;
+};
+
+export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
   const [draft, setDraft] = useState<EditorDraft>(
     createDraftFromTheme(initialTheme),
   );
@@ -154,26 +158,35 @@ export function MockupToolPage() {
   return (
     <div className={styles.page}>
       <header className={styles.topbar}>
-        <div className={styles.brand}>
-          <span className={styles.brandMark}>M</span>
-          <div>
-            <strong>MockUpGo</strong>
-            <span>{draft.projectName}</span>
+        <div className={styles.topbarLeft}>
+          {onGoHome && (
+            <button type="button" className={styles.backBtn} onClick={onGoHome}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 12H5M12 5l-7 7 7 7" />
+              </svg>
+            </button>
+          )}
+          <div className={styles.brand}>
+            <span className={styles.brandMark}>M</span>
+            <div>
+              <strong>MockUpGo</strong>
+              <span>Editor</span>
+            </div>
           </div>
         </div>
 
-        <div className={styles.toolbarChips}>
-          <button type="button">Globals</button>
-          <button type="button">Setup</button>
-          <button type="button">Background</button>
-          <button type="button">App Screens</button>
-          <button type="button">Text</button>
+        <div className={styles.projectName}>
+          <span>{draft.projectName}</span>
         </div>
 
         <div className={styles.toolbarActions}>
-          <span>iPhone 6.9"</span>
-          <button type="button" onClick={handleExport}>
-            {isExporting ? "Exporting..." : "Preview & Export"}
+          <span className={styles.deviceBadge}>iPhone 6.9"</span>
+          <button type="button" className={styles.exportBtn} onClick={handleExport} disabled={isExporting}>
+            {isExporting ? (
+              <><span className={styles.spinner} />Exporting…</>
+            ) : (
+              <><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>Export PNG</>
+            )}
           </button>
         </div>
       </header>

@@ -1,34 +1,80 @@
+/* ─── Design Tokens ─────────────────────────────────────────────── */
 :root {
-  font-family: "Inter", "Segoe UI", sans-serif;
-  color: #111827;
-  background: #f3f6fb;
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  --page-width: 1440px;
+
+  /* Backgrounds */
+  --bg-base: #07090f;
+  --bg-surface: #0d1017;
+  --bg-elevated: #131720;
+  --bg-glass: rgba(255, 255, 255, 0.04);
+  --bg-glass-hover: rgba(255, 255, 255, 0.07);
+
+  /* Borders */
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-default: rgba(255, 255, 255, 0.11);
+  --border-strong: rgba(255, 255, 255, 0.18);
+  --border-accent: rgba(120, 100, 255, 0.5);
+
+  /* Text */
+  --text-primary: #f0f2f8;
+  --text-secondary: rgba(240, 242, 248, 0.65);
+  --text-soft: rgba(240, 242, 248, 0.4);
+  --text-accent: #a78bff;
+
+  /* Accent / Brand */
+  --accent: #7c6cff;
+  --accent-bright: #9d8fff;
+  --accent-dim: rgba(124, 108, 255, 0.15);
+  --accent-glow: rgba(124, 108, 255, 0.35);
+
+  /* Status */
+  --success: #34d399;
+  --warning: #fbbf24;
+
+  /* Radii */
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-xl: 28px;
+  --r-2xl: 36px;
+
+  /* Transitions */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --t-fast: 150ms var(--ease);
+  --t-mid: 240ms var(--ease);
+  --t-slow: 380ms var(--ease);
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 24px 80px rgba(0, 0, 0, 0.6);
+  --shadow-accent: 0 12px 40px rgba(124, 108, 255, 0.25);
+  --shadow-accent-strong: 0 16px 56px rgba(124, 108, 255, 0.4);
 }
 
-* {
+/* ─── Reset ─────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 html {
   scroll-behavior: smooth;
+  color-scheme: dark;
 }
 
 body {
-  margin: 0;
   min-width: 320px;
   min-height: 100vh;
-}
-
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 30%);
+  background: var(--bg-base);
+  color: var(--text-primary);
 }
 
 a {
@@ -41,16 +87,13 @@ input,
 textarea,
 select {
   font: inherit;
+  color: inherit;
 }
 
 button {
   cursor: pointer;
-}
-
-input,
-textarea,
-select {
-  color: inherit;
+  border: none;
+  background: none;
 }
 
 img {
@@ -60,4 +103,31 @@ img {
 
 #root {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-base);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 99px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ─── Utility: Selection ─────────────────────────────────────────── */
+::selection {
+  background: var(--accent-dim);
+  color: var(--text-primary);
 }
