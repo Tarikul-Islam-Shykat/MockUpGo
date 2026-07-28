@@ -55,19 +55,11 @@
   align-items: center;
 }
 
-.brandMark {
-  width: 34px;
-  height: 34px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #9d8fff 0%, #7c6cff 100%);
-  color: #fff;
-  font-weight: 900;
-  font-size: 0.95rem;
-  box-shadow: var(--shadow-accent);
-  flex-shrink: 0;
+.logoImg {
+  height: 30px;
+  width: auto;
+  object-fit: contain;
+  border-radius: 5px;
 }
 
 .brand strong {
@@ -90,6 +82,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
 }
 
 .projectName span {
@@ -101,6 +94,16 @@
   border: 1px solid var(--border-subtle);
   background: var(--bg-glass);
 }
+
+.slideCount {
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  color: var(--accent-bright) !important;
+  background: var(--accent-dim) !important;
+  border-color: var(--border-accent) !important;
+  padding: 5px 10px !important;
+}
+
 
 .toolbarActions {
   display: flex;
@@ -118,7 +121,29 @@
   font-weight: 600;
 }
 
+.previewBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border-radius: var(--r-md);
+  border: 1px solid rgba(0, 255, 135, 0.35);
+  background: rgba(0, 255, 135, 0.08);
+  color: #00e87a;
+  font-size: 0.87rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  transition: background var(--t-fast), box-shadow var(--t-fast), transform var(--t-fast);
+}
+
+.previewBtn:hover {
+  background: rgba(0, 255, 135, 0.15);
+  box-shadow: 0 0 20px rgba(0, 255, 135, 0.2);
+  transform: translateY(-1px);
+}
+
 .exportBtn {
+
   display: inline-flex;
   align-items: center;
   gap: 7px;

@@ -191,12 +191,82 @@
   line-height: 1.45;
 }
 
+/* ─── Slide list header ─────────────────────────────────────────── */
+.slideListHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.slideListHeader span {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-soft);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.addSlideBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 11px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border-accent);
+  background: var(--accent-dim);
+  color: var(--accent-bright);
+  font-size: 0.78rem;
+  font-weight: 700;
+  transition: background var(--t-fast), box-shadow var(--t-fast);
+}
+
+.addSlideBtn:hover {
+  background: rgba(124, 108, 255, 0.2);
+  box-shadow: var(--shadow-accent);
+}
+
+/* ─── Slide row with remove button ──────────────────────────────── */
+.slideRowWrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.slideRowWrap .slideRow {
+  flex: 1;
+}
+
+.removeSlideBtn {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-soft);
+  font-size: 1.1rem;
+  line-height: 1;
+  transition: border-color var(--t-fast), color var(--t-fast), background var(--t-fast);
+}
+
+.removeSlideBtn:hover {
+  border-color: rgba(255, 60, 60, 0.5);
+  background: rgba(255, 60, 60, 0.1);
+  color: #ff6060;
+}
+
+
 /* ─── Slide list ─────────────────────────────────────────────────── */
 .slideList {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
+
 
 .slideRow {
   display: grid;
@@ -262,6 +332,67 @@
   color: var(--accent-bright);
 }
 
+/* ─── Field group label ─────────────────────────────────────────── */
+.fieldGroupLabel {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-soft);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding-bottom: 2px;
+}
+
+/* ─── Font grid ──────────────────────────────────────────────────── */
+.fontGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 7px;
+}
+
+.fontCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  text-align: left;
+  color: inherit;
+  transition: border-color var(--t-fast), background var(--t-fast), box-shadow var(--t-fast);
+}
+
+.fontCard:hover {
+  border-color: var(--border-default);
+  background: var(--bg-glass-hover);
+}
+
+.fontCard[data-active="true"] {
+  border-color: var(--border-accent);
+  background: rgba(124, 108, 255, 0.1);
+  box-shadow: 0 0 0 1px rgba(124, 108, 255, 0.2);
+}
+
+.fontPreview {
+  font-size: 1.4rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text-primary);
+  letter-spacing: -0.04em;
+}
+
+.fontCard b {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  font-family: 'Inter', sans-serif !important;
+}
+
 /* ─── Buttons ────────────────────────────────────────────────────── */
 .primaryButton {
   display: flex;
@@ -278,6 +409,7 @@
   box-shadow: var(--shadow-accent);
   transition: transform var(--t-fast), filter var(--t-fast), opacity var(--t-fast);
 }
+
 
 .primaryButton:hover:not(:disabled) {
   transform: translateY(-1px);

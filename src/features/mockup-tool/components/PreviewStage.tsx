@@ -1,4 +1,5 @@
 import { PhoneMockup } from "@/features/mockup-tool/components/PhoneMockup";
+import { getFontFamily } from "@/features/mockup-tool/data/fonts";
 import type {
   EditorDraft,
   MockupTheme,
@@ -26,6 +27,8 @@ export function PreviewStage({
   onSelectSlide,
   previewRef,
 }: PreviewStageProps) {
+  const fontFamily = getFontFamily(draft.font);
+
   return (
     <section
       className={styles.workspace}
@@ -34,9 +37,9 @@ export function PreviewStage({
       <div className={styles.workspaceTop}>
         <div>
           <strong>{draft.projectName}</strong>
-          <span>{slides.length} vertical screenshots</span>
+          <span>{slides.length} slide{slides.length !== 1 ? "s" : ""}</span>
         </div>
-        <p>Click any slide to edit its text or replace its screenshot.</p>
+        <p>Click any slide to open canvas editor.</p>
       </div>
 
       <div className={styles.canvas}>
@@ -56,6 +59,7 @@ export function PreviewStage({
                 style={{
                   background: `${theme.overlay}, ${theme.slideBackground}`,
                   color: theme.slideText,
+                  fontFamily,
                 }}
               >
                 {theme.decorations.map((item, decorationIndex) => (
@@ -89,12 +93,22 @@ export function PreviewStage({
                   </span>
                 </div>
 
-                <div className={styles.copy}>
+                <div
+                  className={styles.copy}
+                  style={{
+                    transform: `translate(${slide.textOffsetX}px, ${slide.textOffsetY}px)`,
+                  }}
+                >
                   <h3>{slide.title}</h3>
                   <p style={{ color: theme.slideMuted }}>{slide.subtitle}</p>
                 </div>
 
-                <div className={styles.deviceWrap}>
+                <div
+                  className={styles.deviceWrap}
+                  style={{
+                    transform: `translate(${slide.phoneOffsetX}px, ${slide.phoneOffsetY}px)`,
+                  }}
+                >
                   <PhoneMockup
                     screenshotUrl={screenshotUrls[index]}
                     screenshotFit={draft.screenshotFit}
@@ -102,6 +116,15 @@ export function PreviewStage({
                     phoneTilt={draft.phoneTilt}
                     phoneScale={draft.phoneScale}
                   />
+                </div>
+
+                {/* Canvas mode indicator */}
+                <div className={styles.canvasHint} data-no-export="true">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                  </svg>
+                  Edit
                 </div>
               </button>
             ))}

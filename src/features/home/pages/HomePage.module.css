@@ -82,19 +82,11 @@
   flex-shrink: 0;
 }
 
-.logoMark {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #9d8fff 0%, #7c6cff 100%);
-  color: #fff;
-  font-weight: 900;
-  font-size: 1.1rem;
-  box-shadow: var(--shadow-accent);
-  flex-shrink: 0;
+.logoImg {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
+  border-radius: 6px;
 }
 
 .logoName {

@@ -4,6 +4,18 @@ export type ScreenshotFit = "cover" | "contain";
 
 export type ToolTab = "theme" | "slides" | "text" | "style" | "export";
 
+export type FontOption =
+  | "inter"
+  | "outfit"
+  | "space-grotesk"
+  | "dm-sans"
+  | "syne"
+  | "plus-jakarta"
+  | "manrope"
+  | "playfair"
+  | "poppins"
+  | "sora";
+
 export type ThemeDecoration = {
   size: number;
   color: string;
@@ -20,6 +32,10 @@ export type SlideDraft = {
   title: string;
   subtitle: string;
   badge: string;
+  textOffsetX: number;
+  textOffsetY: number;
+  phoneOffsetX: number;
+  phoneOffsetY: number;
 };
 
 export type MockupTheme = {
@@ -37,6 +53,7 @@ export type MockupTheme = {
   phoneScale: number;
   decorations: ThemeDecoration[];
   starterSlides: SlideDraft[];
+  suggestedFont: FontOption;
 };
 
 export type EditorDraft = {
@@ -47,4 +64,5 @@ export type EditorDraft = {
   phoneTilt: number;
   phoneScale: number;
   slideGap: number;
+  font: FontOption;
 };

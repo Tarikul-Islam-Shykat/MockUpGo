@@ -168,6 +168,29 @@
   flex: 1;
 }
 
+/* ─── Canvas hint overlay ────────────────────────────────────────── */
+.canvasHint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: rgba(124, 108, 255, 0.0);
+  color: transparent;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border-radius: 24px;
+  transition: background var(--t-mid), color var(--t-mid);
+  z-index: 2;
+}
+
+.slideCard:hover .canvasHint {
+  background: rgba(0, 0, 0, 0.55);
+  color: rgba(255, 255, 255, 0.9);
+}
+
 /* ─── Responsive ─────────────────────────────────────────────────── */
 @media (max-width: 1180px) {
   .workspaceTop {
@@ -189,3 +212,4 @@
     padding: 20px 16px 32px;
   }
 }
+

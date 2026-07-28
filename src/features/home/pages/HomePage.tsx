@@ -56,7 +56,7 @@ export function HomePage({ onLaunchTool }: HomePageProps) {
       <nav className={styles.nav}>
         <div className={styles.navInner}>
           <div className={styles.logo}>
-            <span className={styles.logoMark}>M</span>
+            <img src="/logo.png" alt="MockUpGo Logo" className={styles.logoImg} />
             <span className={styles.logoName}>MockUpGo</span>
           </div>
           <div className={styles.navLinks}>
@@ -234,7 +234,7 @@ export function HomePage({ onLaunchTool }: HomePageProps) {
       <footer className={styles.footer}>
         <div className={styles.footerInner}>
           <div className={styles.logo}>
-            <span className={styles.logoMark}>M</span>
+            <img src="/logo.png" alt="MockUpGo Logo" className={styles.logoImg} />
             <span className={styles.logoName}>MockUpGo</span>
           </div>
           <p className={styles.footerNote}>
