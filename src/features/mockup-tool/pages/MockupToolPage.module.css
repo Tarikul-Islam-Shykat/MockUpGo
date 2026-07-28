@@ -1,0 +1,99 @@
+.page {
+  min-height: 100vh;
+  background: #f3f6fb;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #ffffff;
+}
+
+.brand {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.brandMark {
+  width: 48px;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #ffd08b 0%, #ff9b42 100%);
+  color: #16100a;
+  font-weight: 800;
+  box-shadow: 0 12px 34px rgba(255, 155, 66, 0.26);
+}
+
+.brand strong,
+.brand span {
+  display: block;
+}
+
+.brand strong {
+  font-size: 1rem;
+  color: #101828;
+}
+
+.brand span {
+  margin-top: 4px;
+  color: #667085;
+}
+
+.toolbarChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.toolbarChips button,
+.toolbarActions button,
+.toolbarActions span {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid #dde5f0;
+  background: #eef3ff;
+  color: #42526b;
+  font-weight: 600;
+}
+
+.toolbarActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.toolbarActions span {
+  background: #6f54ff;
+  color: #ffffff;
+  border-color: #6f54ff;
+}
+
+.toolbarActions button {
+  background: #111827;
+  color: #ffffff;
+  border-color: #111827;
+}
+
+.workspaceShell {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) 340px;
+  min-height: calc(100vh - 77px);
+}
+
+@media (max-width: 1180px) {
+  .topbar {
+    flex-wrap: wrap;
+  }
+
+  .workspaceShell {
+    grid-template-columns: 1fr;
+  }
+}

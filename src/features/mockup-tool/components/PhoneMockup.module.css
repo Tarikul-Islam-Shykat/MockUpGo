@@ -1,0 +1,104 @@
+.shell {
+  display: grid;
+  place-items: center;
+  transition: transform 220ms ease;
+}
+
+.phone {
+  position: relative;
+  width: min(340px, 100%);
+  aspect-ratio: 0.5;
+  border-radius: 44px;
+  padding: 14px;
+  isolation: isolate;
+}
+
+.sideGlow {
+  position: absolute;
+  inset: 10% auto 10% -6px;
+  width: 2px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.28);
+  filter: blur(0.2px);
+}
+
+.notch {
+  position: absolute;
+  top: 11px;
+  left: 50%;
+  width: 38%;
+  height: 24px;
+  transform: translateX(-50%);
+  border-radius: 0 0 18px 18px;
+  background: rgba(7, 10, 14, 0.92);
+  z-index: 3;
+}
+
+.screen {
+  position: relative;
+  height: 100%;
+  border-radius: 32px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.18), transparent 28%),
+    linear-gradient(180deg, #0f131c 0%, #0b1016 100%);
+}
+
+.screenshot {
+  width: 100%;
+  height: 100%;
+}
+
+.placeholder {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 12px;
+  height: 100%;
+  padding: 22px;
+  background:
+    linear-gradient(180deg, rgba(8, 13, 22, 0.12), rgba(8, 13, 22, 0.85)),
+    linear-gradient(145deg, #ffc15f 0%, #ef8354 52%, #344055 100%);
+}
+
+.placeholder span,
+.placeholder strong {
+  max-width: 12ch;
+}
+
+.placeholder span {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 250, 242, 0.88);
+}
+
+.placeholder strong {
+  font-size: 1.25rem;
+  line-height: 1.1;
+  color: #fff7ef;
+}
+
+.placeholderBars {
+  display: grid;
+  gap: 10px;
+}
+
+.placeholderBars span {
+  display: block;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.placeholderBars span:nth-child(1) {
+  width: 92%;
+}
+
+.placeholderBars span:nth-child(2) {
+  width: 74%;
+}
+
+.placeholderBars span:nth-child(3) {
+  width: 84%;
+}

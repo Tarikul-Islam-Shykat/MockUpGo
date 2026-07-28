@@ -1,5 +1,5 @@
-import { HomePage } from "@/features/home/pages/HomePage";
+import { MockupToolPage } from "@/features/mockup-tool/pages/MockupToolPage";
 
 export function App() {
-  return <HomePage />;
+  return <MockupToolPage />;
 }

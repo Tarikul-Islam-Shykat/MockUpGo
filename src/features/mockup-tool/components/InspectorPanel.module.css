@@ -1,0 +1,198 @@
+.panel {
+  display: grid;
+  align-content: start;
+  gap: 18px;
+  padding: 18px;
+  border-left: 1px solid #e5eaf2;
+  background: #fbfcfe;
+}
+
+.header {
+  display: grid;
+  gap: 8px;
+}
+
+.header span {
+  color: #6f54ff;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.header h2,
+.header p {
+  margin: 0;
+}
+
+.header h2 {
+  font-size: 1.15rem;
+  color: #111827;
+}
+
+.header p {
+  color: #667085;
+  line-height: 1.5;
+}
+
+.section {
+  display: grid;
+  gap: 14px;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+}
+
+.field span {
+  font-size: 0.86rem;
+  color: #475467;
+}
+
+.field input,
+.field textarea,
+.field select {
+  width: 100%;
+  padding: 13px 14px;
+  border-radius: 14px;
+  border: 1px solid #dbe3ee;
+  background: #ffffff;
+  color: #111827;
+  resize: vertical;
+  outline: none;
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
+  border-color: #9cb5ff;
+  box-shadow: 0 0 0 4px rgba(111, 84, 255, 0.08);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.rangeHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rangeHeader b {
+  color: #6f54ff;
+  font-size: 0.84rem;
+}
+
+.field input[type="range"] {
+  padding: 0;
+  accent-color: #6f54ff;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.uploadCard,
+.exportCard {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid #dbe3ee;
+  background: #ffffff;
+}
+
+.uploadCard strong,
+.exportCard strong {
+  color: #111827;
+}
+
+.uploadCard span,
+.exportCard span {
+  color: #667085;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.slideList {
+  display: grid;
+  gap: 8px;
+}
+
+.slideRow {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 10px;
+  align-items: start;
+  padding: 12px;
+  border: 1px solid #dbe3ee;
+  border-radius: 16px;
+  background: #ffffff;
+  text-align: left;
+  color: inherit;
+}
+
+.slideRow span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #eff4ff;
+  color: #5263a6;
+  font-weight: 700;
+}
+
+.slideRow div {
+  display: grid;
+  gap: 4px;
+}
+
+.slideRow strong {
+  color: #101828;
+  font-size: 0.94rem;
+}
+
+.slideRow small {
+  color: #667085;
+}
+
+.slideRow[data-active="true"] {
+  border-color: #aac0ff;
+  box-shadow: 0 0 0 4px rgba(111, 84, 255, 0.06);
+}
+
+.primaryButton,
+.secondaryButton {
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid transparent;
+}
+
+.primaryButton {
+  background: #111827;
+  color: #ffffff;
+}
+
+.secondaryButton {
+  background: #ffffff;
+  border-color: #dbe3ee;
+  color: #344054;
+}
+
+@media (max-width: 1180px) {
+  .panel {
+    border-left: 0;
+    border-top: 1px solid #e5eaf2;
+  }
+}
+
+@media (max-width: 520px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

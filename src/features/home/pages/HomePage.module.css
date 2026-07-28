@@ -1,9 +1,0 @@
-.pageShell {
-  min-height: 100vh;
-}
-
-.main {
-  width: min(var(--page-width), calc(100% - 32px));
-  margin: 0 auto;
-  padding: 8px 0 48px;
-}

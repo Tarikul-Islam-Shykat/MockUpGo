@@ -1,0 +1,138 @@
+.workspace {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  padding: 16px;
+}
+
+.workspaceTop {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.workspaceTop div {
+  display: grid;
+  gap: 4px;
+}
+
+.workspaceTop strong {
+  font-size: 1rem;
+  color: #111827;
+}
+
+.workspaceTop span,
+.workspaceTop p {
+  color: #667085;
+}
+
+.workspaceTop p {
+  margin: 0;
+  max-width: 36ch;
+  line-height: 1.5;
+}
+
+.canvas {
+  overflow: auto;
+  padding-bottom: 8px;
+}
+
+.board {
+  min-width: max-content;
+  padding: 18px;
+  border: 1px solid #dbe3ee;
+  border-radius: 24px;
+  background: #f8fafc;
+}
+
+.track {
+  display: flex;
+  align-items: stretch;
+  width: max-content;
+  padding: 6px;
+}
+
+.slideCard {
+  position: relative;
+  width: 292px;
+  min-height: 660px;
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  padding: 18px 18px 22px;
+  border: 1px solid rgba(129, 141, 168, 0.24);
+  border-radius: 28px;
+  overflow: hidden;
+  text-align: left;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
+}
+
+.slideCard[data-active="true"] {
+  border-color: #90a7ff;
+  box-shadow:
+    0 0 0 4px rgba(111, 84, 255, 0.1),
+    0 20px 60px rgba(15, 23, 42, 0.12);
+}
+
+.decoration {
+  position: absolute;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.cardHeader,
+.copy,
+.deviceWrap {
+  position: relative;
+  z-index: 1;
+}
+
+.badge {
+  display: inline-flex;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.copy {
+  display: grid;
+  gap: 10px;
+}
+
+.copy h3,
+.copy p {
+  margin: 0;
+}
+
+.copy h3 {
+  font-size: 2.35rem;
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+}
+
+.copy p {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.deviceWrap {
+  display: grid;
+  align-items: end;
+  justify-items: center;
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+.deviceWrap :global(.phone) {
+  width: min(240px, 100%);
+}
+
+@media (max-width: 1180px) {
+  .workspaceTop {
+    flex-direction: column;
+    align-items: start;
+  }
+}
