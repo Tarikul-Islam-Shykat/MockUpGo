@@ -34,11 +34,11 @@ type AnimatedPreviewProps = {
 
 type SlideState = "entering" | "visible" | "exiting" | "hidden";
 
-const SLIDE_DURATION = 6500;
-const EXIT_DURATION = 650;
-const ENTER_DURATION = 900;
-const VIDEO_HOLD_DURATION = 5600;
-const VIDEO_FADE_DURATION = 900;
+const SLIDE_DURATION = 3200;
+const EXIT_DURATION = 220;
+const ENTER_DURATION = 260;
+const VIDEO_HOLD_DURATION = 1200;
+const VIDEO_FADE_DURATION = 140;
 
 export function AnimatedPreview({
   theme,
@@ -55,6 +55,7 @@ export function AnimatedPreview({
   const [isRecording, setIsRecording] = useState(false);
   const [recordingProgress, setRecordingProgress] = useState(0);
   const [animKey, setAnimKey] = useState(0);
+  const [exportMessage, setExportMessage] = useState<string | null>(null);
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const slideCardRef = useRef<HTMLDivElement>(null);
@@ -159,6 +160,7 @@ export function AnimatedPreview({
     setIsRecording(true);
     setRecordingProgress(0);
     setIsPlaying(false);
+    setExportMessage(null);
 
     try {
       const slideImages: HTMLImageElement[] = [];
@@ -180,12 +182,12 @@ export function AnimatedPreview({
 
         const dataUrl = await toPng(slideCardRef.current, {
           cacheBust: true,
-          pixelRatio: 2,
+          pixelRatio: 1.5,
         });
         slideImages.push(await loadImage(dataUrl));
       }
 
-      await renderPreviewVideo({
+      const exportKind = await renderPreviewVideo({
         slideImages,
         projectName: draft.projectName,
         slideHoldDuration: VIDEO_HOLD_DURATION,
@@ -194,8 +196,16 @@ export function AnimatedPreview({
       });
 
       setRecordingProgress(100);
+      setExportMessage(
+        exportKind === "webm"
+          ? "WebM download is ready."
+          : "WebM was not available, so a PNG fallback was downloaded instead.",
+      );
     } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Video export failed.";
       console.error("Video recording failed:", error);
+      setExportMessage(message);
     } finally {
       flushSync(() => {
         setCurrentIndex(previousIndex);
@@ -228,9 +238,12 @@ export function AnimatedPreview({
             {draft.projectName} - Animated Preview
           </div>
           <div className={styles.topBarNote}>
-            Preview timing has been slowed down. Video export saves as WebM in
-            the browser; MP4 would need a separate conversion step.
+            Video export saves as WebM in the browser. MP4 would need a
+            separate conversion step.
           </div>
+          {exportMessage ? (
+            <div className={styles.exportNotice}>{exportMessage}</div>
+          ) : null}
         </div>
 
         <div className={styles.topBarActions}>
@@ -470,5 +483,4 @@ function loadImage(url: string) {
 async function waitForPaint() {
   await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
   await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-  await new Promise<void>((resolve) => setTimeout(resolve, 90));
 }

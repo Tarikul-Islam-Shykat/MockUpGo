@@ -57,6 +57,18 @@
   color: rgba(255, 255, 255, 0.5);
 }
 
+.exportNotice {
+  max-width: 430px;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(124, 108, 255, 0.24);
+  background: rgba(124, 108, 255, 0.12);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
 .topBarActions {
   display: flex;
   align-items: center;
