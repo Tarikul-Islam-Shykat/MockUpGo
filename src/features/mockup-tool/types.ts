@@ -38,6 +38,12 @@ export type SlideDraft = {
   phoneOffsetY: number;
 };
 
+export type ScreenshotAsset = {
+  id: string;
+  name: string;
+  url: string;
+};
+
 export type MockupTheme = {
   id: string;
   name: string;

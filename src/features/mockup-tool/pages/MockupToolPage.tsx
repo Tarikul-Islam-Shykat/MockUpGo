@@ -13,6 +13,7 @@ import {
 } from "@/features/mockup-tool/data/mockup-templates";
 import type {
   EditorDraft,
+  ScreenshotAsset,
   SlideDraft,
   ToolTab,
 } from "@/features/mockup-tool/types";
@@ -22,6 +23,13 @@ import styles from "./MockupToolPage.module.css";
 
 const initialTheme = mockupThemes[0];
 const MAX_SLIDES = 10;
+
+function resizeSlideAssignments(
+  assignments: Array<string | null>,
+  nextLength: number,
+) {
+  return Array.from({ length: nextLength }, (_, index) => assignments[index] ?? null);
+}
 
 type MockupToolPageProps = {
   onGoHome?: () => void;
@@ -37,11 +45,13 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
   const [activeTab, setActiveTab] = useState<ToolTab>("slides");
   const [selectedSlideIndex, setSelectedSlideIndex] = useState(0);
   const [canvasMode, setCanvasMode] = useState(false);
-  const [screenshotUrls, setScreenshotUrls] = useState<Array<string | null>>(
-    Array.from({ length: MAX_SLIDES }, () => null),
+  const [screenshotAssets, setScreenshotAssets] = useState<ScreenshotAsset[]>(
+    [],
   );
-  const [screenshotNames, setScreenshotNames] = useState<Array<string | null>>(
-    Array.from({ length: MAX_SLIDES }, () => null),
+  const [slideScreenshotAssetIds, setSlideScreenshotAssetIds] = useState<
+    Array<string | null>
+  >(
+    Array.from({ length: createSlidesFromTheme(initialTheme).length }, () => null),
   );
   const [isExporting, setIsExporting] = useState(false);
   const [isZipping, setIsZipping] = useState(false);
@@ -49,20 +59,41 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
   const [showPreview, setShowPreview] = useState(false);
   const [use3D, setUse3D] = useState(true);
   const previewRef = useRef<HTMLDivElement>(null);
-  const objectUrlRef = useRef<Array<string | null>>(
-    Array.from({ length: MAX_SLIDES }, () => null),
-  );
+  const screenshotAssetsRef = useRef<ScreenshotAsset[]>([]);
 
   const selectedTheme =
     mockupThemes.find((theme) => theme.id === draft.themeId) ?? initialTheme;
+  const screenshotLookup = new Map(
+    screenshotAssets.map((asset) => [asset.id, asset] as const),
+  );
+  const screenshotUrls = slideScreenshotAssetIds.map(
+    (assetId) => (assetId ? screenshotLookup.get(assetId)?.url ?? null : null),
+  );
+  const screenshotNames = slideScreenshotAssetIds.map(
+    (assetId) => (assetId ? screenshotLookup.get(assetId)?.name ?? null : null),
+  );
+
+  useEffect(() => {
+    screenshotAssetsRef.current = screenshotAssets;
+  }, [screenshotAssets]);
 
   useEffect(() => {
     return () => {
-      objectUrlRef.current.forEach((url) => {
-        if (url) URL.revokeObjectURL(url);
+      screenshotAssetsRef.current.forEach((asset) => {
+        URL.revokeObjectURL(asset.url);
       });
     };
   }, []);
+
+  function createScreenshotAssets(files: Iterable<File>) {
+    return Array.from(files)
+      .filter((file) => file.type.startsWith("image/"))
+      .map((file) => ({
+        id: crypto.randomUUID(),
+        name: file.name,
+        url: URL.createObjectURL(file),
+      }));
+  }
 
   function updateDraft<Key extends keyof EditorDraft>(
     field: Key,
@@ -86,68 +117,85 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
   function handleThemeSelect(themeId: string) {
     const theme = mockupThemes.find((item) => item.id === themeId);
     if (!theme) return;
+    const nextSlides = createSlidesFromTheme(theme);
     setDraft((current) => ({
       ...createDraftFromTheme(theme),
       projectName: current.projectName,
       deviceFinish: current.deviceFinish,
       screenshotFit: current.screenshotFit,
     }));
-    setSlides(createSlidesFromTheme(theme));
+    setSlides(nextSlides);
+    setSlideScreenshotAssetIds((current) =>
+      resizeSlideAssignments(current, nextSlides.length),
+    );
+    setSelectedSlideIndex((current) => Math.min(current, nextSlides.length - 1));
     setCanvasMode(false);
   }
 
-  function setSlideScreenshot(index: number, file: File | null) {
-    const currentUrl = objectUrlRef.current[index];
-    if (currentUrl) URL.revokeObjectURL(currentUrl);
+  function assignScreenshotToSlide(index: number, assetId: string | null) {
+    setSlideScreenshotAssetIds((current) =>
+      current.map((item, itemIndex) => (itemIndex === index ? assetId : item)),
+    );
+  }
 
+  function setSlideScreenshot(index: number, file: File | null) {
     if (!file) {
-      objectUrlRef.current[index] = null;
-      setScreenshotUrls((current) =>
-        current.map((item, i) => (i === index ? null : item)),
-      );
-      setScreenshotNames((current) =>
-        current.map((item, i) => (i === index ? null : item)),
-      );
+      assignScreenshotToSlide(index, null);
       return;
     }
 
-    const nextObjectUrl = URL.createObjectURL(file);
-    objectUrlRef.current[index] = nextObjectUrl;
-    setScreenshotUrls((current) =>
-      current.map((item, i) => (i === index ? nextObjectUrl : item)),
-    );
-    setScreenshotNames((current) =>
-      current.map((item, i) => (i === index ? file.name : item)),
-    );
+    const [nextAsset] = createScreenshotAssets([file]);
+    if (!nextAsset) return;
+
+    setScreenshotAssets((current) => [nextAsset, ...current]);
+    assignScreenshotToSlide(index, nextAsset.id);
   }
 
-  function handleBatchUpload(files: FileList | null) {
+  function handleLibraryUpload(files: FileList | null) {
     if (!files?.length) return;
-    Array.from(files)
-      .slice(0, MAX_SLIDES)
-      .forEach((file, index) => setSlideScreenshot(index, file));
+    const nextAssets = createScreenshotAssets(files);
+    if (!nextAssets.length) return;
+
+    setScreenshotAssets((current) => [...current, ...nextAssets]);
+    setSlideScreenshotAssetIds((current) => {
+      const nextAssignments = [...current];
+      nextAssets.forEach((asset, offset) => {
+        const targetIndex = selectedSlideIndex + offset;
+        if (targetIndex < slides.length) {
+          nextAssignments[targetIndex] = asset.id;
+        }
+      });
+      return nextAssignments;
+    });
   }
 
   function handleResetTheme() {
+    const nextSlides = createSlidesFromTheme(selectedTheme);
     setDraft((current) => ({
       ...createDraftFromTheme(selectedTheme),
       projectName: current.projectName,
       deviceFinish: current.deviceFinish,
       screenshotFit: current.screenshotFit,
     }));
-    setSlides(createSlidesFromTheme(selectedTheme));
+    setSlides(nextSlides);
+    setSlideScreenshotAssetIds((current) =>
+      resizeSlideAssignments(current, nextSlides.length),
+    );
+    setSelectedSlideIndex((current) => Math.min(current, nextSlides.length - 1));
   }
 
   function handleAddSlide() {
     if (slides.length >= MAX_SLIDES) return;
     setSlides((current) => [...current, createBlankSlide(current.length)]);
+    setSlideScreenshotAssetIds((current) => [...current, null]);
   }
 
   function handleRemoveSlide(index: number) {
     if (slides.length <= 1) return;
     setSlides((current) => current.filter((_, i) => i !== index));
-    // Revoke screenshot if exists
-    setSlideScreenshot(index, null);
+    setSlideScreenshotAssetIds((current) =>
+      current.filter((_, itemIndex) => itemIndex !== index),
+    );
     // Adjust selected index
     setSelectedSlideIndex((current) =>
       current >= index && current > 0 ? current - 1 : current,
@@ -198,6 +246,19 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
 
   function handleExitCanvas() {
     setCanvasMode(false);
+  }
+
+  function handleRemoveScreenshotAsset(assetId: string) {
+    setScreenshotAssets((current) => {
+      const assetToRemove = current.find((asset) => asset.id === assetId);
+      if (assetToRemove) {
+        URL.revokeObjectURL(assetToRemove.url);
+      }
+      return current.filter((asset) => asset.id !== assetId);
+    });
+    setSlideScreenshotAssetIds((current) =>
+      current.map((item) => (item === assetId ? null : item)),
+    );
   }
 
   return (
@@ -321,6 +382,8 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
           slides={slides}
           selectedSlideIndex={selectedSlideIndex}
           themes={mockupThemes}
+          screenshotLibrary={screenshotAssets}
+          slideScreenshotAssetIds={slideScreenshotAssetIds}
           screenshotNames={screenshotNames}
           onThemeSelect={handleThemeSelect}
           onDraftChange={updateDraft}
@@ -328,8 +391,10 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
           onSelectedSlideChange={(index) => {
             setSelectedSlideIndex(index);
           }}
+          onAssignScreenshotToSlide={assignScreenshotToSlide}
+          onRemoveScreenshotAsset={handleRemoveScreenshotAsset}
           onSlideScreenshotChange={setSlideScreenshot}
-          onBatchUpload={handleBatchUpload}
+          onScreenshotLibraryUpload={handleLibraryUpload}
           onResetTheme={handleResetTheme}
           onExport={handleExport}
           onAddSlide={handleAddSlide}

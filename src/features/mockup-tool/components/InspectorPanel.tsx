@@ -5,6 +5,7 @@ import type {
   EditorDraft,
   FontOption,
   MockupTheme,
+  ScreenshotAsset,
   ScreenshotFit,
   SlideDraft,
   ToolTab,
@@ -18,6 +19,8 @@ type InspectorPanelProps = {
   slides: SlideDraft[];
   selectedSlideIndex: number;
   themes: MockupTheme[];
+  screenshotLibrary: ScreenshotAsset[];
+  slideScreenshotAssetIds: Array<string | null>;
   screenshotNames: Array<string | null>;
   onThemeSelect: (themeId: string) => void;
   onDraftChange: <Key extends keyof EditorDraft>(
@@ -30,8 +33,10 @@ type InspectorPanelProps = {
     value: SlideDraft[Key],
   ) => void;
   onSelectedSlideChange: (index: number) => void;
+  onAssignScreenshotToSlide: (index: number, assetId: string | null) => void;
+  onRemoveScreenshotAsset: (assetId: string) => void;
   onSlideScreenshotChange: (index: number, file: File | null) => void;
-  onBatchUpload: (files: FileList | null) => void;
+  onScreenshotLibraryUpload: (files: FileList | null) => void;
   onResetTheme: () => void;
   onExport: () => void;
   onAddSlide: () => void;
@@ -60,13 +65,17 @@ export function InspectorPanel({
   slides,
   selectedSlideIndex,
   themes,
+  screenshotLibrary,
+  slideScreenshotAssetIds,
   screenshotNames,
   onThemeSelect,
   onDraftChange,
   onSlideChange,
   onSelectedSlideChange,
+  onAssignScreenshotToSlide,
+  onRemoveScreenshotAsset,
   onSlideScreenshotChange,
-  onBatchUpload,
+  onScreenshotLibraryUpload,
   onResetTheme,
   onExport,
   onAddSlide,
@@ -79,6 +88,14 @@ export function InspectorPanel({
 }: InspectorPanelProps) {
   const selectedSlide = slides[selectedSlideIndex];
   const selectedScreenshotName = screenshotNames[selectedSlideIndex];
+  const selectedSlideScreenshotId = slideScreenshotAssetIds[selectedSlideIndex];
+
+  function getAssignedSlides(assetId: string) {
+    return slideScreenshotAssetIds.reduce<number[]>((list, assignedAssetId, index) => {
+      if (assignedAssetId === assetId) list.push(index + 1);
+      return list;
+    }, []);
+  }
 
   return (
     <aside className={styles.panel}>
@@ -116,10 +133,13 @@ export function InspectorPanel({
               accept="image/*"
               multiple
               className={styles.hiddenInput}
-              onChange={(event) => onBatchUpload(event.target.files)}
+              onChange={(event) => onScreenshotLibraryUpload(event.target.files)}
             />
-            <strong>Upload all screenshots at once</strong>
-            <span>Assigns up to {slides.length} images across your slides</span>
+            <strong>Upload screenshot library</strong>
+            <span>
+              Select several app screens at once. They will be added below and
+              auto-filled from slide {selectedSlideIndex + 1}.
+            </span>
           </label>
 
           {/* Slide list */}
@@ -165,6 +185,77 @@ export function InspectorPanel({
             ))}
           </div>
 
+          <div className={styles.divider} />
+          <div className={styles.fieldGroupLabel}>Screenshot library</div>
+
+          <div className={styles.selectionCard}>
+            <strong>Selected slide: {selectedSlideIndex + 1}</strong>
+            <span>
+              {selectedScreenshotName
+                ? `Using ${selectedScreenshotName}`
+                : "Choose any uploaded screen below to place it in the phone."}
+            </span>
+          </div>
+
+          {screenshotLibrary.length > 0 ? (
+            <div className={styles.assetGrid}>
+              {screenshotLibrary.map((asset) => {
+                const assignedSlides = getAssignedSlides(asset.id);
+                const isActive = asset.id === selectedSlideScreenshotId;
+
+                return (
+                  <button
+                    key={asset.id}
+                    type="button"
+                    className={styles.assetCard}
+                    data-active={isActive}
+                    onClick={() =>
+                      onAssignScreenshotToSlide(selectedSlideIndex, asset.id)
+                    }
+                  >
+                    <img
+                      src={asset.url}
+                      alt={asset.name}
+                      className={styles.assetThumb}
+                    />
+                    <div className={styles.assetCopy}>
+                      <strong>{asset.name}</strong>
+                      <span>
+                        {assignedSlides.length > 0
+                          ? `Used on slide ${assignedSlides.join(", ")}`
+                          : "Not assigned yet"}
+                      </span>
+                    </div>
+                    <div className={styles.assetActions}>
+                      {isActive ? (
+                        <span className={styles.assetBadge}>Selected</span>
+                      ) : null}
+                      <span
+                        role="button"
+                        tabIndex={-1}
+                        className={styles.assetRemove}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onRemoveScreenshotAsset(asset.id);
+                        }}
+                      >
+                        Remove
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className={styles.emptyState}>
+              <strong>No screenshots uploaded yet</strong>
+              <span>
+                Add multiple app screens once, then click one to assign it to
+                the selected slide.
+              </span>
+            </div>
+          )}
+
           {/* Single screenshot upload for selected slide */}
           <label className={styles.uploadCard}>
             <input
@@ -180,11 +271,23 @@ export function InspectorPanel({
             />
             <strong>
               {selectedScreenshotName
-                ? `Replace slide ${selectedSlideIndex + 1} screenshot`
-                : `Upload screenshot for slide ${selectedSlideIndex + 1}`}
+                ? `Quick replace slide ${selectedSlideIndex + 1}`
+                : `Upload one screenshot for slide ${selectedSlideIndex + 1}`}
             </strong>
-            <span>{selectedScreenshotName ?? "PNG or JPG — click to browse"}</span>
+            <span>
+              {selectedScreenshotName ?? "PNG or JPG. This also adds it to the library."}
+            </span>
           </label>
+
+          {selectedSlideScreenshotId ? (
+            <button
+              type="button"
+              className={styles.secondaryButton}
+              onClick={() => onAssignScreenshotToSlide(selectedSlideIndex, null)}
+            >
+              Clear selected slide screenshot
+            </button>
+          ) : null}
         </section>
       ) : null}
 
