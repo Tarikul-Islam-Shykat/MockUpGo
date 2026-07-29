@@ -26,30 +26,28 @@ export function StandardThemePanel({
         onSelect={onThemeSelect}
       />
 
-      <label className={styles.uploadCard}>
-        <input
-          type="file"
-          accept="image/*"
-          className={styles.hiddenInput}
-          onChange={(event) => {
-            onCustomBackgroundUpload(event.target.files?.[0] ?? null);
-            event.target.value = "";
-          }}
-        />
-        <strong>Create custom theme</strong>
-        <span>
-          Upload a background image to switch from the standard theme library to
-          custom theme controls.
-        </span>
-      </label>
+      <div className={styles.actionGrid}>
+        <label className={styles.primaryButton}>
+          <input
+            type="file"
+            accept="image/*"
+            className={styles.hiddenInput}
+            onChange={(event) => {
+              onCustomBackgroundUpload(event.target.files?.[0] ?? null);
+              event.target.value = "";
+            }}
+          />
+          Set custom theme
+        </label>
 
-      <button
-        type="button"
-        className={styles.secondaryButton}
-        onClick={onResetTheme}
-      >
-        Reset theme defaults
-      </button>
+        <button
+          type="button"
+          className={styles.secondaryButton}
+          onClick={onResetTheme}
+        >
+          Reset theme defaults
+        </button>
+      </div>
     </div>
   );
 }

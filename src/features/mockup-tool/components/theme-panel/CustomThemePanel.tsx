@@ -1,150 +1,92 @@
+import { customThemePalettes } from "@/features/mockup-tool/data/custom-theme-palettes";
 import type { CustomThemeSettings } from "@/features/mockup-tool/types";
 
+import { GradientPaletteRail } from "./gradient-palette-rail/GradientPaletteRail";
 import styles from "./CustomThemePanel.module.css";
 
 type CustomThemePanelProps = {
-  customBackgroundName: string;
   settings: CustomThemeSettings;
-  onCustomBackgroundUpload: (file: File | null) => void;
-  onClearCustomBackground: () => void;
   onSettingsChange: <Key extends keyof CustomThemeSettings>(
     field: Key,
     value: CustomThemeSettings[Key],
   ) => void;
   onResetCustomTheme: () => void;
+  onReturnToThemes: () => void;
 };
 
 export function CustomThemePanel({
-  customBackgroundName,
   settings,
-  onCustomBackgroundUpload,
-  onClearCustomBackground,
   onSettingsChange,
   onResetCustomTheme,
+  onReturnToThemes,
 }: CustomThemePanelProps) {
+  function applyPalette(paletteId: string) {
+    const palette =
+      customThemePalettes.find((item) => item.id === paletteId) ??
+      customThemePalettes[0];
+
+    onSettingsChange("backgroundMode", "gradient");
+    onSettingsChange("paletteId", palette.id);
+    onSettingsChange("backgroundStart", palette.backgroundStart);
+    onSettingsChange("backgroundEnd", palette.backgroundEnd);
+    onSettingsChange("backgroundAngle", palette.backgroundAngle);
+    onSettingsChange("textColor", palette.textColor);
+    onSettingsChange("mutedColor", palette.mutedColor);
+    onSettingsChange("accentColor", palette.accentColor);
+  }
+
   return (
     <div className={styles.panel}>
-      <div className={styles.modeCard}>
-        <div className={styles.modeBadge}>Custom Theme</div>
-        <strong>{customBackgroundName}</strong>
-        <span>
-          Standard theme visuals are disabled. Your uploaded background now
-          drives the scene.
-        </span>
-      </div>
-
-      <label className={styles.uploadCard}>
-        <input
-          type="file"
-          accept="image/*"
-          className={styles.hiddenInput}
-          onChange={(event) => {
-            onCustomBackgroundUpload(event.target.files?.[0] ?? null);
-            event.target.value = "";
-          }}
-        />
-        <strong>Replace custom background</strong>
-        <span>Choose a different image file for this custom theme.</span>
-      </label>
-
       <div className={styles.controlSurface}>
-        <div className={styles.surfaceHeader}>
-          <div>
-            <strong>Background Controls</strong>
-            <span>Fine-tune the custom scene without bringing the old theme back.</span>
-          </div>
-        </div>
+        <GradientPaletteRail
+          selectedPaletteId={settings.paletteId}
+          onSelectPalette={applyPalette}
+        />
 
-        <div className={styles.fieldGroupLabel}>Transform</div>
+        <div className={styles.fieldGroupLabel}>Gradient colors</div>
 
         <label className={styles.field}>
           <div className={styles.rangeHeader}>
-            <span>Zoom</span>
-            <b>{settings.scale}%</b>
-          </div>
-          <input
-            type="range"
-            min={70}
-            max={180}
-            step={1}
-            value={settings.scale}
-            onChange={(event) =>
-              onSettingsChange("scale", Number(event.target.value))
-            }
-          />
-        </label>
-
-        <label className={styles.field}>
-          <div className={styles.rangeHeader}>
-            <span>Rotation</span>
-            <b>{settings.rotation}deg</b>
-          </div>
-          <input
-            type="range"
-            min={-45}
-            max={45}
-            step={1}
-            value={settings.rotation}
-            onChange={(event) =>
-              onSettingsChange("rotation", Number(event.target.value))
-            }
-          />
-        </label>
-
-        <div className={styles.fieldGroupLabel}>Position</div>
-
-        <label className={styles.field}>
-          <div className={styles.rangeHeader}>
-            <span>Horizontal pan</span>
-            <b>{settings.offsetX}px</b>
-          </div>
-          <input
-            type="range"
-            min={-240}
-            max={240}
-            step={1}
-            value={settings.offsetX}
-            onChange={(event) =>
-              onSettingsChange("offsetX", Number(event.target.value))
-            }
-          />
-        </label>
-
-        <label className={styles.field}>
-          <div className={styles.rangeHeader}>
-            <span>Vertical pan</span>
-            <b>{settings.offsetY}px</b>
-          </div>
-          <input
-            type="range"
-            min={-240}
-            max={240}
-            step={1}
-            value={settings.offsetY}
-            onChange={(event) =>
-              onSettingsChange("offsetY", Number(event.target.value))
-            }
-          />
-        </label>
-
-        <div className={styles.fieldGroupLabel}>Atmosphere</div>
-
-        <label className={styles.field}>
-          <div className={styles.rangeHeader}>
-            <span>Veil strength</span>
-            <b>{settings.overlayOpacity}%</b>
+            <span>Gradient angle</span>
+            <b>{settings.backgroundAngle}°</b>
           </div>
           <input
             type="range"
             min={0}
-            max={100}
+            max={360}
             step={1}
-            value={settings.overlayOpacity}
+            value={settings.backgroundAngle}
             onChange={(event) =>
-              onSettingsChange("overlayOpacity", Number(event.target.value))
+              onSettingsChange("backgroundAngle", Number(event.target.value))
             }
           />
         </label>
+
+        <div className={styles.colorGrid}>
+          <label className={styles.colorField}>
+            <span>Start</span>
+            <input
+              type="color"
+              value={settings.backgroundStart}
+              onChange={(event) => {
+                onSettingsChange("backgroundMode", "gradient");
+                onSettingsChange("backgroundStart", event.target.value);
+              }}
+            />
+          </label>
+
+          <label className={styles.colorField}>
+            <span>End</span>
+            <input
+              type="color"
+              value={settings.backgroundEnd}
+              onChange={(event) => {
+                onSettingsChange("backgroundMode", "gradient");
+                onSettingsChange("backgroundEnd", event.target.value);
+              }}
+            />
+          </label>
+        </div>
       </div>
 
       <div className={styles.actionRow}>
@@ -159,7 +101,7 @@ export function CustomThemePanel({
         <button
           type="button"
           className={styles.dangerButton}
-          onClick={onClearCustomBackground}
+          onClick={onReturnToThemes}
         >
           Return to themes
         </button>

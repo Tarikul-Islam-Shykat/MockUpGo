@@ -11,8 +11,10 @@ import {
   createSlidesFromTheme,
   mockupThemes,
 } from "@/features/mockup-tool/data/mockup-templates";
+import { customThemePalettes } from "@/features/mockup-tool/data/custom-theme-palettes";
 import type {
   CanvasSelection,
+  CustomThemeBackgroundMode,
   CustomThemeSettings,
   EditorDraft,
   ScreenshotAsset,
@@ -26,10 +28,21 @@ import { exportMockupAsPng, exportMockupAsZip } from "@/features/mockup-tool/uti
 import styles from "./MockupToolPage.module.css";
 
 const initialTheme = mockupThemes[0];
+const initialPalette = customThemePalettes[0];
 const MAX_SLIDES = 10;
 
-function createDefaultCustomThemeSettings(): CustomThemeSettings {
+function createDefaultCustomThemeSettings(
+  backgroundMode: CustomThemeBackgroundMode = "preset",
+): CustomThemeSettings {
   return {
+    backgroundMode,
+    paletteId: initialPalette.id,
+    backgroundStart: initialPalette.backgroundStart,
+    backgroundEnd: initialPalette.backgroundEnd,
+    backgroundAngle: initialPalette.backgroundAngle,
+    textColor: initialPalette.textColor,
+    mutedColor: initialPalette.mutedColor,
+    accentColor: initialPalette.accentColor,
     scale: 100,
     rotation: 0,
     offsetX: 0,
@@ -202,7 +215,10 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
       }
       return nextBackground;
     });
-    setCustomThemeSettings(createDefaultCustomThemeSettings());
+    setCustomThemeSettings((current) => ({
+      ...current,
+      backgroundMode: "image",
+    }));
   }
 
   function handleClearCustomBackground() {
@@ -212,7 +228,20 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
       }
       return null;
     });
-    setCustomThemeSettings(createDefaultCustomThemeSettings());
+    setCustomThemeSettings((current) => ({
+      ...current,
+      backgroundMode: "gradient",
+    }));
+  }
+
+  function handleReturnToThemes() {
+    setCustomBackground((current) => {
+      if (current) {
+        URL.revokeObjectURL(current.url);
+      }
+      return null;
+    });
+    setCustomThemeSettings(createDefaultCustomThemeSettings("preset"));
   }
 
   function updateCustomThemeSettings<Key extends keyof CustomThemeSettings>(
@@ -223,7 +252,9 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
   }
 
   function handleResetCustomTheme() {
-    setCustomThemeSettings(createDefaultCustomThemeSettings());
+    setCustomThemeSettings((current) =>
+      createDefaultCustomThemeSettings(current.backgroundMode),
+    );
   }
 
   function updateDraft<Key extends keyof EditorDraft>(
@@ -591,14 +622,14 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
           screenshotLibrary={screenshotAssets}
           slideScreenshotAssetIds={slideScreenshotAssetIds}
           screenshotNames={screenshotNames}
-            customBackgroundName={customBackground?.name ?? null}
+          customBackgroundName={customBackground?.name ?? null}
             customThemeSettings={customThemeSettings}
             selectedCanvasItem={selectedCanvasItem}
             onThemeSelect={handleThemeSelect}
           onCustomBackgroundUpload={handleCustomBackgroundUpload}
-          onClearCustomBackground={handleClearCustomBackground}
           onCustomThemeSettingsChange={updateCustomThemeSettings}
           onResetCustomTheme={handleResetCustomTheme}
+          onReturnToThemes={handleReturnToThemes}
           onDraftChange={updateDraft}
           onSlideChange={updateSlide}
           onSelectedSlideChange={(index) => {

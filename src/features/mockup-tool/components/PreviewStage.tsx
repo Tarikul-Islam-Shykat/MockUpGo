@@ -14,6 +14,7 @@ import {
   getCustomVeilLayerStyle,
   getOverlayLayerStyle,
   getSlideCardBackgroundStyle,
+  getRuntimeThemeColors,
 } from "@/features/mockup-tool/utils/theme-background";
 
 import styles from "./PreviewStage.module.css";
@@ -79,7 +80,9 @@ export function PreviewStage({
   previewRef,
 }: PreviewStageProps) {
   const fontFamily = getFontFamily(draft.font);
-  const hasCustomTheme = Boolean(customBackgroundUrl);
+  const hasCustomTheme =
+    customThemeSettings.backgroundMode !== "preset" || Boolean(customBackgroundUrl);
+  const themeColors = getRuntimeThemeColors(theme, customThemeSettings);
   const copyDragRef = useRef<{
     slideIndex: number;
     startX: number;
@@ -370,7 +373,7 @@ export function PreviewStage({
                   onSelectCanvasItem(null);
                 }}
                 style={{
-                  color: theme.slideText,
+                  color: themeColors.slideText,
                   fontFamily,
                   ...getSlideCardBackgroundStyle(
                     theme.slideBackground,
@@ -421,9 +424,9 @@ export function PreviewStage({
                     <span
                       className={styles.badge}
                       style={{
-                        color: theme.slideText,
-                        borderColor: `${theme.accent}44`,
-                        background: `${theme.accent}1a`,
+                        color: themeColors.slideText,
+                        borderColor: `${themeColors.accent}44`,
+                        background: `${themeColors.accent}1a`,
                       }}
                     >
                       {slide.badge}
@@ -454,7 +457,7 @@ export function PreviewStage({
                   }}
                 >
                   <h3>{slide.title}</h3>
-                  <p style={{ color: theme.slideMuted }}>{slide.subtitle}</p>
+                  <p style={{ color: themeColors.slideMuted }}>{slide.subtitle}</p>
                 </div>
 
                 {slide.extraTextBlocks.map((block) => (

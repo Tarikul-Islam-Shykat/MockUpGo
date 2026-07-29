@@ -15,6 +15,7 @@ import {
   getCustomVeilLayerStyle,
   getOverlayLayerStyle,
   getSlideCardBackgroundStyle,
+  getRuntimeThemeColors,
 } from "@/features/mockup-tool/utils/theme-background";
 
 import { renderPreviewVideo } from "./renderPreviewVideo";
@@ -58,7 +59,9 @@ export function AnimatedPreview({
   const slideCardRef = useRef<HTMLDivElement>(null);
 
   const fontFamily = getFontFamily(draft.font);
-  const hasCustomTheme = Boolean(customBackgroundUrl);
+  const hasCustomTheme =
+    customThemeSettings.backgroundMode !== "preset" || Boolean(customBackgroundUrl);
+  const themeColors = getRuntimeThemeColors(theme, customThemeSettings);
 
   const goToSlide = useCallback(
     (index: number) => {
@@ -280,7 +283,7 @@ export function AnimatedPreview({
             ref={slideCardRef}
             className={styles.slideCard}
             style={{
-              color: theme.slideText,
+              color: themeColors.slideText,
               fontFamily,
               ...getSlideCardBackgroundStyle(
                 theme.slideBackground,
@@ -339,9 +342,9 @@ export function AnimatedPreview({
                       : "false"
                   }
                   style={{
-                    color: theme.slideText,
-                    borderColor: `${theme.accent}55`,
-                    background: `${theme.accent}20`,
+                    color: themeColors.slideText,
+                    borderColor: `${themeColors.accent}55`,
+                    background: `${themeColors.accent}20`,
                   }}
                 >
                   {slide.badge}
@@ -370,7 +373,7 @@ export function AnimatedPreview({
                     : "false"
                 }
                 style={{
-                  color: theme.slideMuted,
+                  color: themeColors.slideMuted,
                   transform: `translate(${slide.textOffsetX}px, ${slide.textOffsetY}px)`,
                 }}
               >

@@ -1,5 +1,10 @@
 import type { CSSProperties } from "react";
-import type { CustomThemeSettings } from "@/features/mockup-tool/types";
+import type {
+  CustomThemeSettings,
+  MockupTheme,
+} from "@/features/mockup-tool/types";
+
+export type ThemeColors = Pick<MockupTheme, "slideText" | "slideMuted" | "accent">;
 
 export function getSlideCardBackgroundStyle(
   slideBackground: string,
@@ -14,8 +19,15 @@ export function getCustomBackgroundLayerStyle(
   customBackgroundUrl: string | null,
   settings: CustomThemeSettings,
 ): CSSProperties {
+  const gradient = `linear-gradient(${settings.backgroundAngle}deg, ${settings.backgroundStart}, ${settings.backgroundEnd})`;
+
   return {
-    backgroundImage: customBackgroundUrl ? `url("${customBackgroundUrl}")` : "none",
+    background:
+      settings.backgroundMode === "gradient"
+        ? gradient
+        : customBackgroundUrl
+          ? `url("${customBackgroundUrl}") center center / cover no-repeat`
+          : gradient,
     backgroundPosition: "center center",
     backgroundRepeat: "no-repeat",
     backgroundSize: "cover",
@@ -40,5 +52,20 @@ export function getCustomVeilLayerStyle(
     background:
       "linear-gradient(180deg, rgba(5, 8, 14, 0.12), rgba(5, 8, 14, 0.28))",
     opacity: settings.overlayOpacity / 100,
+  };
+}
+
+export function getRuntimeThemeColors(
+  theme: MockupTheme,
+  settings: CustomThemeSettings,
+): ThemeColors {
+  if (settings.backgroundMode === "preset") {
+    return theme;
+  }
+
+  return {
+    slideText: settings.textColor,
+    slideMuted: settings.mutedColor,
+    accent: settings.accentColor,
   };
 }

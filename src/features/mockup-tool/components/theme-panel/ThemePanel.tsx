@@ -13,13 +13,13 @@ type ThemePanelProps = {
   customThemeSettings: CustomThemeSettings;
   onThemeSelect: (themeId: string) => void;
   onCustomBackgroundUpload: (file: File | null) => void;
-  onClearCustomBackground: () => void;
   onCustomThemeSettingsChange: <Key extends keyof CustomThemeSettings>(
     field: Key,
     value: CustomThemeSettings[Key],
   ) => void;
   onResetCustomTheme: () => void;
   onResetTheme: () => void;
+  onReturnToThemes: () => void;
 };
 
 export function ThemePanel({
@@ -29,20 +29,22 @@ export function ThemePanel({
   customThemeSettings,
   onThemeSelect,
   onCustomBackgroundUpload,
-  onClearCustomBackground,
   onCustomThemeSettingsChange,
   onResetCustomTheme,
   onResetTheme,
+  onReturnToThemes,
 }: ThemePanelProps) {
-  if (customBackgroundName) {
+  const hasCustomTheme =
+    customBackgroundName !== null ||
+    customThemeSettings.backgroundMode !== "preset";
+
+  if (hasCustomTheme) {
     return (
       <CustomThemePanel
-        customBackgroundName={customBackgroundName}
         settings={customThemeSettings}
-        onCustomBackgroundUpload={onCustomBackgroundUpload}
-        onClearCustomBackground={onClearCustomBackground}
         onSettingsChange={onCustomThemeSettingsChange}
         onResetCustomTheme={onResetCustomTheme}
+        onReturnToThemes={onReturnToThemes}
       />
     );
   }

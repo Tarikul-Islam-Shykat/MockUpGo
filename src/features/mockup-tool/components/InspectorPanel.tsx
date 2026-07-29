@@ -30,12 +30,12 @@ type InspectorPanelProps = {
   customThemeSettings: CustomThemeSettings;
   onThemeSelect: (themeId: string) => void;
   onCustomBackgroundUpload: (file: File | null) => void;
-  onClearCustomBackground: () => void;
   onCustomThemeSettingsChange: <Key extends keyof CustomThemeSettings>(
     field: Key,
     value: CustomThemeSettings[Key],
   ) => void;
   onResetCustomTheme: () => void;
+  onReturnToThemes: () => void;
   onDraftChange: <Key extends keyof EditorDraft>(
     field: Key,
     value: EditorDraft[Key],
@@ -79,9 +79,9 @@ export function InspectorPanel({
   customThemeSettings,
   onThemeSelect,
   onCustomBackgroundUpload,
-  onClearCustomBackground,
   onCustomThemeSettingsChange,
   onResetCustomTheme,
+  onReturnToThemes,
   onDraftChange,
   onSlideChange,
   onSelectedSlideChange,
@@ -121,9 +121,9 @@ export function InspectorPanel({
             customThemeSettings={customThemeSettings}
             onThemeSelect={onThemeSelect}
             onCustomBackgroundUpload={onCustomBackgroundUpload}
-            onClearCustomBackground={onClearCustomBackground}
             onCustomThemeSettingsChange={onCustomThemeSettingsChange}
             onResetCustomTheme={onResetCustomTheme}
+            onReturnToThemes={onReturnToThemes}
             onResetTheme={onResetTheme}
           />
         </section>

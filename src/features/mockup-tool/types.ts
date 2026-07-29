@@ -4,6 +4,8 @@ export type ScreenshotFit = "cover" | "contain";
 
 export type PhoneFramePreset = "svg-classic";
 
+export type CustomThemeBackgroundMode = "preset" | "image" | "gradient";
+
 export type ToolTab = "theme" | "slides" | "text" | "style" | "export";
 
 export type FontOption =
@@ -76,7 +78,27 @@ export type ScreenshotAsset = {
   url: string;
 };
 
+export type CustomThemePalette = {
+  id: string;
+  name: string;
+  description: string;
+  backgroundStart: string;
+  backgroundEnd: string;
+  backgroundAngle: number;
+  textColor: string;
+  mutedColor: string;
+  accentColor: string;
+};
+
 export type CustomThemeSettings = {
+  backgroundMode: CustomThemeBackgroundMode;
+  paletteId: string;
+  backgroundStart: string;
+  backgroundEnd: string;
+  backgroundAngle: number;
+  textColor: string;
+  mutedColor: string;
+  accentColor: string;
   scale: number;
   rotation: number;
   offsetX: number;

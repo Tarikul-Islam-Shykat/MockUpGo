@@ -10,42 +10,45 @@
   display: none;
 }
 
-.uploadCard {
+.actionGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.primaryButton {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 14px 16px;
-  border-radius: var(--r-lg);
-  border: 1px dashed var(--border-default);
-  background: var(--bg-glass);
+  align-items: center;
+  justify-content: center;
+  padding: 11px 14px;
+  border-radius: var(--r-md);
+  border: 1px solid rgba(120, 194, 255, 0.28);
+  background:
+    linear-gradient(135deg, rgba(95, 178, 255, 0.16), rgba(124, 108, 255, 0.14)),
+    var(--bg-glass);
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 0.86rem;
   cursor: pointer;
   transition:
     border-color var(--t-fast),
-    background var(--t-fast);
+    background var(--t-fast),
+    transform var(--t-fast);
 }
 
-.uploadCard:hover {
-  border-color: var(--border-accent);
-  background: var(--bg-glass-hover);
-}
-
-.uploadCard strong {
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.uploadCard span {
-  font-size: 0.8rem;
-  color: var(--text-soft);
-  line-height: 1.4;
+.primaryButton:hover {
+  border-color: rgba(126, 200, 255, 0.42);
+  background:
+    linear-gradient(135deg, rgba(95, 178, 255, 0.2), rgba(124, 108, 255, 0.18)),
+    var(--bg-glass-hover);
+  transform: translateY(-1px);
 }
 
 .secondaryButton {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 11px 16px;
+  padding: 11px 14px;
   border-radius: var(--r-md);
   border: 1px solid var(--border-default);
   background: var(--bg-glass);
@@ -62,4 +65,10 @@
   border-color: var(--border-strong);
   color: var(--text-primary);
   background: var(--bg-glass-hover);
+}
+
+@media (max-width: 520px) {
+  .actionGrid {
+    grid-template-columns: 1fr;
+  }
 }

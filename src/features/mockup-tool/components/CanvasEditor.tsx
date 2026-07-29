@@ -13,6 +13,7 @@ import {
   getCustomVeilLayerStyle,
   getOverlayLayerStyle,
   getSlideCardBackgroundStyle,
+  getRuntimeThemeColors,
 } from "@/features/mockup-tool/utils/theme-background";
 import { exportSlidePng } from "@/features/mockup-tool/utils/export-mockup";
 
@@ -126,7 +127,9 @@ export function CanvasEditor({
   const fontFamily = getFontFamily(draft.font);
   const hasDrift = slide.textOffsetX !== 0 || slide.textOffsetY !== 0 || slide.phoneOffsetX !== 0 || slide.phoneOffsetY !== 0;
   const hasScreenshot = Boolean(screenshotUrl);
-  const hasCustomTheme = Boolean(customBackgroundUrl);
+  const hasCustomTheme =
+    customThemeSettings.backgroundMode !== "preset" || Boolean(customBackgroundUrl);
+  const themeColors = getRuntimeThemeColors(theme, customThemeSettings);
 
   return (
     <div className={styles.editor}>
@@ -205,7 +208,7 @@ export function CanvasEditor({
           ref={slideRef}
           className={styles.slideCard}
           style={{
-            color: theme.slideText,
+            color: themeColors.slideText,
             fontFamily,
             ...getSlideCardBackgroundStyle(
               theme.slideBackground,
@@ -261,12 +264,12 @@ export function CanvasEditor({
               <div className={styles.dragHandle} data-drag-handle="true">⠿ Text</div>
               <span
                 className={styles.badge}
-                style={{ color: theme.slideText, borderColor: `${theme.accent}55`, background: `${theme.accent}20` }}
+                style={{ color: themeColors.slideText, borderColor: `${themeColors.accent}55`, background: `${themeColors.accent}20` }}
               >
                 {slide.badge}
               </span>
               <h3 className={styles.headline}>{slide.title}</h3>
-              <p className={styles.subtitle} style={{ color: theme.slideMuted }}>{slide.subtitle}</p>
+              <p className={styles.subtitle} style={{ color: themeColors.slideMuted }}>{slide.subtitle}</p>
             </div>
 
             {/* ── Draggable phone block ────────────────────────────── */}
