@@ -82,7 +82,7 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
   const [slides, setSlides] = useState<SlideDraft[]>(
     createSlidesFromTheme(initialTheme),
   );
-  const [activeTab, setActiveTab] = useState<ToolTab>("slides");
+  const [activeTab, setActiveTab] = useState<ToolTab>("text");
   const [selectedSlideIndex, setSelectedSlideIndex] = useState(0);
   const [screenshotAssets, setScreenshotAssets] = useState<ScreenshotAsset[]>(
     [],
@@ -619,6 +619,7 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
           onImageBlockResize={(slideIndex, blockId, width, height) => {
             updateSlideImageBlock(slideIndex, blockId, { width, height });
           }}
+          onRemoveSlide={handleRemoveSlide}
           previewRef={previewRef}
         />
 
@@ -633,7 +634,7 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
           screenshotNames={screenshotNames}
           customBackgroundName={customBackground?.name ?? null}
             customThemeSettings={customThemeSettings}
-            selectedCanvasItem={selectedCanvasItem}
+          selectedCanvasItem={selectedCanvasItem}
           onThemeSelect={handleThemeSelect}
           onCustomBackgroundUpload={handleCustomBackgroundUpload}
           onSetGradientTheme={handleClearCustomBackground}

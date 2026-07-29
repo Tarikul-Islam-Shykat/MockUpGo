@@ -1,5 +1,4 @@
 import { ThemePanel } from "@/features/mockup-tool/components/theme-panel/ThemePanel";
-import { SlidePanel } from "@/features/mockup-tool/components/slide-panel/SlidePanel";
 import { TextPanel } from "@/features/mockup-tool/components/text-panel/TextPanel";
 import { StylePanel } from "@/features/mockup-tool/components/style-panel/StylePanel";
 import { ExportPanel } from "@/features/mockup-tool/components/export-panel/ExportPanel";
@@ -132,28 +131,6 @@ export function InspectorPanel({
         </section>
       ) : null}
 
-      {/* ── SLIDES TAB ─────────────────────────────────────────────── */}
-      {activeTab === "slides" ? (
-        <section className={styles.section}>
-          <SlidePanel
-            slides={slides}
-            selectedSlideIndex={selectedSlideIndex}
-            maxSlides={maxSlides}
-            screenshotLibrary={screenshotLibrary}
-            slideScreenshotAssetIds={slideScreenshotAssetIds}
-            screenshotNames={screenshotNames}
-            onSelectedSlideChange={onSelectedSlideChange}
-            onSlideFrameChange={onSlideFrameChange}
-            onAssignScreenshotToSlide={onAssignScreenshotToSlide}
-            onRemoveScreenshotAsset={onRemoveScreenshotAsset}
-            onSlideScreenshotChange={onSlideScreenshotChange}
-            onScreenshotLibraryUpload={onScreenshotLibraryUpload}
-            onAddSlide={onAddSlide}
-            onRemoveSlide={onRemoveSlide}
-          />
-        </section>
-      ) : null}
-
       {/* ── TEXT TAB ───────────────────────────────────────────────── */}
       {activeTab === "text" ? (
         <section className={styles.section}>
@@ -165,8 +142,16 @@ export function InspectorPanel({
             onSlideChange={onSlideChange}
             onAddImageBlock={onAddSlideImageBlock}
             onRemoveImageBlock={onRemoveSlideImageBlock}
+            onAddSlide={onAddSlide}
             selectedCanvasItem={selectedCanvasItem}
             onDeleteSelectedCanvasItem={onDeleteSelectedCanvasItem}
+            screenshotLibrary={screenshotLibrary}
+            slideScreenshotAssetIds={slideScreenshotAssetIds}
+            screenshotNames={screenshotNames}
+            onAssignScreenshotToSlide={onAssignScreenshotToSlide}
+            onRemoveScreenshotAsset={onRemoveScreenshotAsset}
+            onSlideScreenshotChange={onSlideScreenshotChange}
+            onScreenshotLibraryUpload={onScreenshotLibraryUpload}
           />
         </section>
       ) : null}
@@ -205,7 +190,6 @@ export function InspectorPanel({
 function getTabTitle(tab: ToolTab) {
   switch (tab) {
     case "theme":  return "Theme library";
-    case "slides": return "Slide assets";
     case "text":   return "Slide copy";
     case "style":  return "Visual settings";
     case "export": return "Export";
@@ -215,7 +199,6 @@ function getTabTitle(tab: ToolTab) {
 function getTabDescription(tab: ToolTab) {
   switch (tab) {
     case "theme":  return "Choose the visual direction.";
-    case "slides": return "Upload screenshots and manage slides.";
     case "text":   return "Edit content and manage draggable canvas items.";
     case "style":  return "Device and layout controls.";
     case "export": return "Download your mockup assets.";

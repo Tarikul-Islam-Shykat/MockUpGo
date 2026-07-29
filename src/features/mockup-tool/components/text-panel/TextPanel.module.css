@@ -116,6 +116,60 @@
   box-shadow: 0 0 0 1px rgba(124, 108, 255, 0.2);
 }
 
+.secondaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-default);
+  background: var(--bg-glass);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 700;
+  transition:
+    border-color var(--t-fast),
+    background var(--t-fast),
+    box-shadow var(--t-fast);
+}
+
+.secondaryButton:hover {
+  border-color: var(--border-accent);
+  background: var(--bg-glass-hover);
+  box-shadow: 0 0 0 1px rgba(124, 108, 255, 0.12);
+}
+
+.actionRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.actionButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-default);
+  background: var(--bg-glass);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    border-color var(--t-fast),
+    background var(--t-fast),
+    box-shadow var(--t-fast);
+}
+
+.actionButton:hover {
+  border-color: var(--border-accent);
+  background: var(--bg-glass-hover);
+  box-shadow: 0 0 0 1px rgba(124, 108, 255, 0.12);
+}
+
 .fontGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -281,6 +335,99 @@
   border-radius: var(--r-lg);
   border: 1px solid var(--border-subtle);
   background: var(--bg-glass);
+}
+
+.assetGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.assetCard {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  color: inherit;
+  text-align: left;
+  transition:
+    border-color var(--t-fast),
+    background var(--t-fast),
+    box-shadow var(--t-fast);
+}
+
+.assetCard:hover {
+  border-color: var(--border-default);
+  background: var(--bg-glass-hover);
+}
+
+.assetCard[data-active="true"] {
+  border-color: var(--border-accent);
+  background: rgba(124, 108, 255, 0.08);
+  box-shadow: 0 0 0 1px rgba(124, 108, 255, 0.2);
+}
+
+.assetThumb {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.assetCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.assetCopy strong {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.assetCopy span {
+  font-size: 0.76rem;
+  color: var(--text-soft);
+  line-height: 1.35;
+}
+
+.assetActions {
+  grid-column: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.assetBadge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--accent-bright);
+  background: var(--accent-dim);
+  border: 1px solid var(--border-accent);
+  padding: 4px 8px;
+  border-radius: 999px;
+}
+
+.assetRemove {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #ff8a8a;
+}
+
+.assetRemove:hover {
+  color: #ffb2b2;
 }
 
 .uploadCard {

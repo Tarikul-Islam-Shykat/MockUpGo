@@ -19,7 +19,7 @@ export type PageSizePresetId =
   | "portrait-9-16"
   | "portrait-10-21";
 
-export type ToolTab = "theme" | "slides" | "text" | "style" | "export";
+export type ToolTab = "theme" | "text" | "style" | "export";
 
 export type FontOption =
   | "inter"

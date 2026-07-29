@@ -2,6 +2,7 @@ import type {
   CanvasSelection,
   EditorDraft,
   FontOption,
+  ScreenshotAsset,
   SlideDraft,
   SlideTextBlock,
 } from "@/features/mockup-tool/types";
@@ -24,8 +25,16 @@ type TextPanelProps = {
   ) => void;
   onAddImageBlock: (index: number, file: File | null) => void;
   onRemoveImageBlock: (index: number, blockId: string) => void;
+  onAddSlide: () => void;
   selectedCanvasItem: CanvasSelection | null;
   onDeleteSelectedCanvasItem: () => void;
+  screenshotLibrary: ScreenshotAsset[];
+  slideScreenshotAssetIds: Array<string | null>;
+  screenshotNames: Array<string | null>;
+  onAssignScreenshotToSlide: (index: number, assetId: string | null) => void;
+  onRemoveScreenshotAsset: (assetId: string) => void;
+  onSlideScreenshotChange: (index: number, file: File | null) => void;
+  onScreenshotLibraryUpload: (files: FileList | null) => void;
 };
 
 export function TextPanel({
@@ -36,8 +45,16 @@ export function TextPanel({
   onSlideChange,
   onAddImageBlock,
   onRemoveImageBlock,
+  onAddSlide,
   selectedCanvasItem,
   onDeleteSelectedCanvasItem,
+  screenshotLibrary,
+  slideScreenshotAssetIds,
+  screenshotNames,
+  onAssignScreenshotToSlide,
+  onRemoveScreenshotAsset,
+  onSlideScreenshotChange,
+  onScreenshotLibraryUpload,
 }: TextPanelProps) {
   function updateBlocks(nextBlocks: SlideTextBlock[]) {
     onSlideChange(selectedSlideIndex, "extraTextBlocks", nextBlocks);
@@ -74,6 +91,16 @@ export function TextPanel({
     updateBlocks(slide.extraTextBlocks.filter((block) => block.id !== blockId));
   }
 
+  function getAssignedSlides(assetId: string) {
+    return slideScreenshotAssetIds.reduce<number[]>(
+      (list, assignedAssetId, index) => {
+        if (assignedAssetId === assetId) list.push(index + 1);
+        return list;
+      },
+      [],
+    );
+  }
+
   return (
     <div className={styles.panel}>
       <label className={styles.field}>
@@ -84,22 +111,66 @@ export function TextPanel({
         />
       </label>
 
-      <div className={styles.fieldGroupLabel}>Typography</div>
-      <div className={styles.fontGrid}>
-        {fontOptions.map((font) => (
-          <button
-            key={font.id}
-            type="button"
-            className={styles.fontCard}
-            data-active={draft.font === font.id}
-            onClick={() => onDraftChange("font", font.id as FontOption)}
-            style={{ fontFamily: font.family }}
-          >
-            <span className={styles.fontPreview}>Ag</span>
-            <b>{font.name}</b>
-          </button>
-        ))}
+      <div className={styles.actionRow}>
+        <button
+          type="button"
+          className={styles.primaryButton}
+          onClick={addTextBlock}
+        >
+          Add text
+        </button>
+
+        <label className={styles.actionButton}>
+          <input
+            type="file"
+            accept="image/*"
+            className={styles.hiddenInput}
+            onChange={(event) =>
+              onAddImageBlock(
+                selectedSlideIndex,
+                event.target.files?.[0] ?? null,
+              )
+            }
+          />
+          Add image
+        </label>
+
+        <label className={styles.actionButton}>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            className={styles.hiddenInput}
+            onChange={(event) => onScreenshotLibraryUpload(event.target.files)}
+          />
+          Upload screenshot
+        </label>
+
+        <button
+          type="button"
+          className={styles.secondaryButton}
+          onClick={onAddSlide}
+        >
+          Add new slide
+        </button>
       </div>
+
+      <div className={styles.fieldGroupLabel}>Typography</div>
+      <label className={styles.field}>
+        <span>Font</span>
+        <select
+          value={draft.font}
+          onChange={(event) =>
+            onDraftChange("font", event.target.value as FontOption)
+          }
+        >
+          {fontOptions.map((font) => (
+            <option key={font.id} value={font.id}>
+              {font.name}
+            </option>
+          ))}
+        </select>
+      </label>
 
       <div className={styles.fieldGroupLabel}>
         Slide {selectedSlideIndex + 1} content
@@ -155,14 +226,6 @@ export function TextPanel({
       </label>
 
       <div className={styles.fieldGroupLabel}>Extra text blocks</div>
-
-      <button
-        type="button"
-        className={styles.primaryButton}
-        onClick={addTextBlock}
-      >
-        Add text block
-      </button>
 
       {slide.extraTextBlocks.length > 0 ? (
         <div className={styles.blockList}>
@@ -262,37 +325,12 @@ export function TextPanel({
                 </select>
               </label>
 
-              <div className={styles.dragHint}>
-                Drag this text directly on the slide canvas to place it anywhere.
-              </div>
             </div>
           ))}
         </div>
-      ) : (
-        <div className={styles.emptyState}>
-          Add a text block to place extra copy anywhere on the slide.
-        </div>
-      )}
+      ) : null}
 
       <div className={styles.fieldGroupLabel}>Image blocks</div>
-
-      <label className={styles.uploadCard}>
-        <input
-          type="file"
-          accept="image/*"
-          className={styles.hiddenInput}
-          onChange={(event) =>
-            onAddImageBlock(
-              selectedSlideIndex,
-              event.target.files?.[0] ?? null,
-            )
-          }
-        />
-        <strong>Add image or logo</strong>
-        <span>
-          Upload a logo or image block, then drag it on the slide and resize it from the canvas.
-        </span>
-      </label>
 
       {slide.imageBlocks.length > 0 ? (
         <div className={styles.blockList}>
@@ -319,17 +357,10 @@ export function TextPanel({
                   <span>{block.width} × {block.height}px</span>
                 </div>
               </div>
-              <div className={styles.dragHint}>
-                Drag the image on the canvas and use the bottom-right handle to resize it.
-              </div>
             </div>
           ))}
         </div>
-      ) : (
-        <div className={styles.emptyState}>
-          Add an image block if you want to place a logo or extra artwork on the slide.
-        </div>
-      )}
+      ) : null}
 
       {selectedCanvasItem &&
       selectedCanvasItem.slideIndex === selectedSlideIndex &&
@@ -353,9 +384,82 @@ export function TextPanel({
         </div>
       ) : null}
 
-      <div className={styles.canvasHint}>
-        Drag the main headline, the phone, any extra text block, or any image block directly on the slide canvas. Select a text or image block and press Delete to remove it.
-      </div>
+      <div className={styles.fieldGroupLabel}>Screenshot library</div>
+
+      {screenshotLibrary.length > 0 ? (
+        <div className={styles.assetGrid}>
+          {screenshotLibrary.map((asset) => {
+            const assignedSlides = getAssignedSlides(asset.id);
+            const isActive = asset.id === slideScreenshotAssetIds[selectedSlideIndex];
+
+            return (
+              <button
+                key={asset.id}
+                type="button"
+                className={styles.assetCard}
+                data-active={isActive}
+                onClick={() => onAssignScreenshotToSlide(selectedSlideIndex, asset.id)}
+              >
+                <img
+                  src={asset.url}
+                  alt={asset.name}
+                  className={styles.assetThumb}
+                />
+                <div className={styles.assetCopy}>
+                  <strong>{asset.name}</strong>
+                  <span>
+                    {assignedSlides.length > 0
+                      ? `Used on slide ${assignedSlides.join(", ")}`
+                      : "Not assigned yet"}
+                  </span>
+                </div>
+                <div className={styles.assetActions}>
+                  {isActive ? (
+                    <span className={styles.assetBadge}>Selected</span>
+                  ) : null}
+                  <span
+                    role="button"
+                    tabIndex={-1}
+                    className={styles.assetRemove}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onRemoveScreenshotAsset(asset.id);
+                    }}
+                  >
+                    Remove
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        <div className={styles.emptyState}>
+        </div>
+      )}
+
+      <label className={styles.uploadCard}>
+        <input
+          type="file"
+          accept="image/*"
+          className={styles.hiddenInput}
+          onChange={(event) =>
+            onSlideScreenshotChange(
+              selectedSlideIndex,
+              event.target.files?.[0] ?? null,
+            )
+          }
+        />
+        <strong>
+          {screenshotNames[selectedSlideIndex]
+            ? `Quick replace slide ${selectedSlideIndex + 1}`
+            : `Upload one screenshot for slide ${selectedSlideIndex + 1}`}
+        </strong>
+        <span>
+          {screenshotNames[selectedSlideIndex] ??
+            "PNG or JPG. This also adds it to the library."}
+        </span>
+      </label>
     </div>
   );
 }
