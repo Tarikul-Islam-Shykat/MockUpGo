@@ -1,4 +1,5 @@
 import type { EditorDraft, FontOption, MockupTheme, SlideDraft } from "@/features/mockup-tool/types";
+import { createPresetPageSize } from "@/features/mockup-tool/utils/page-size";
 
 function makeSlides(
   values: Array<[string, string, string]>,
@@ -443,11 +444,17 @@ export const mockupThemes: MockupTheme[] = [
 ];
 
 export function createDraftFromTheme(theme: MockupTheme): EditorDraft {
+  const pageSizePreset = "portrait-9-16";
+  const pageSize = createPresetPageSize(pageSizePreset);
+
   return {
     projectName: "Untitled Screenshot Set",
     themeId: theme.id,
     deviceFinish: "obsidian",
     screenshotFit: "cover",
+    pageSizePreset,
+    pageWidth: pageSize.width,
+    pageHeight: pageSize.height,
     phoneTilt: theme.phoneTilt,
     phoneScale: theme.phoneScale,
     slideGap: 18,

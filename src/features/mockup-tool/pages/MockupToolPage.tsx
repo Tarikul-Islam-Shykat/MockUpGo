@@ -286,6 +286,9 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
       projectName: current.projectName,
       deviceFinish: current.deviceFinish,
       screenshotFit: current.screenshotFit,
+      pageSizePreset: current.pageSizePreset,
+      pageWidth: current.pageWidth,
+      pageHeight: current.pageHeight,
     }));
     setSlides(nextSlides);
     setSlideScreenshotAssetIds((current) =>
@@ -339,6 +342,9 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
       projectName: current.projectName,
       deviceFinish: current.deviceFinish,
       screenshotFit: current.screenshotFit,
+      pageSizePreset: current.pageSizePreset,
+      pageWidth: current.pageWidth,
+      pageHeight: current.pageHeight,
     }));
     setSlides(nextSlides);
     setSlideScreenshotAssetIds((current) =>
@@ -604,6 +610,9 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
           onTextBlockMove={(slideIndex, blockId, x, y) => {
             updateSlideTextBlock(slideIndex, blockId, { x, y });
           }}
+          onTextBlockResize={(slideIndex, blockId, size) => {
+            updateSlideTextBlock(slideIndex, blockId, { size });
+          }}
           onImageBlockMove={(slideIndex, blockId, x, y) => {
             updateSlideImageBlock(slideIndex, blockId, { x, y });
           }}
@@ -625,8 +634,9 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
           customBackgroundName={customBackground?.name ?? null}
             customThemeSettings={customThemeSettings}
             selectedCanvasItem={selectedCanvasItem}
-            onThemeSelect={handleThemeSelect}
+          onThemeSelect={handleThemeSelect}
           onCustomBackgroundUpload={handleCustomBackgroundUpload}
+          onSetGradientTheme={handleClearCustomBackground}
           onCustomThemeSettingsChange={updateCustomThemeSettings}
           onResetCustomTheme={handleResetCustomTheme}
           onReturnToThemes={handleReturnToThemes}

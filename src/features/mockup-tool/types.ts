@@ -6,6 +6,19 @@ export type PhoneFramePreset = "svg-classic";
 
 export type CustomThemeBackgroundMode = "preset" | "image" | "gradient";
 
+export type PageSizePresetId =
+  | "landscape-16-9"
+  | "landscape-3-2"
+  | "landscape-4-3"
+  | "landscape-5-4"
+  | "landscape-3-1"
+  | "square-1-1"
+  | "portrait-4-5"
+  | "portrait-3-4"
+  | "portrait-2-3"
+  | "portrait-9-16"
+  | "portrait-10-21";
+
 export type ToolTab = "theme" | "slides" | "text" | "style" | "export";
 
 export type FontOption =
@@ -65,6 +78,8 @@ export type SlideDraft = {
   textOffsetY: number;
   phoneOffsetX: number;
   phoneOffsetY: number;
+  pageWidth?: number;
+  pageHeight?: number;
 };
 
 export type CanvasSelection =
@@ -129,6 +144,9 @@ export type EditorDraft = {
   themeId: string;
   deviceFinish: DeviceFinish;
   screenshotFit: ScreenshotFit;
+  pageSizePreset: PageSizePresetId;
+  pageWidth: number;
+  pageHeight: number;
   phoneTilt: number;
   phoneScale: number;
   slideGap: number;

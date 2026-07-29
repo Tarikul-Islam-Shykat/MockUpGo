@@ -19,7 +19,7 @@
   background: var(--bg-base);
 }
 
-.workspaceTop div {
+.workspaceInfo {
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -45,6 +45,61 @@
   text-align: right;
 }
 
+.zoomControls {
+  flex-direction: row;
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(8, 11, 18, 0.72);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+  white-space: nowrap;
+}
+
+.zoomControls button {
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  min-width: 34px;
+  height: 30px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition:
+    transform var(--t-fast),
+    background var(--t-fast),
+    color var(--t-fast);
+  flex-shrink: 0;
+}
+
+.zoomControls button:hover {
+  background: rgba(124, 108, 255, 0.18);
+  color: #fff;
+}
+
+.zoomControls button:active {
+  transform: translateY(1px);
+}
+
+.zoomReadout {
+  min-width: 60px !important;
+  background: linear-gradient(135deg, rgba(124, 108, 255, 0.4), rgba(111, 195, 255, 0.28)) !important;
+}
+
+.fitButton {
+  min-width: 42px !important;
+}
+
 /* ─── Canvas area ────────────────────────────────────────────────── */
 .canvas {
   flex: 1;
@@ -57,26 +112,31 @@
 
 /* ─── Board: the rounded frame container ─────────────────────────── */
 .board {
-  min-width: max-content;
+  position: relative;
+  min-width: 0;
   padding: 20px;
   border: 1px solid var(--border-subtle);
   border-radius: 28px;
   background: var(--bg-surface);
   box-shadow: var(--shadow-md);
+  overflow: visible;
 }
 
 /* ─── Track: the horizontal flex of slide cards ──────────────────── */
 .track {
+  position: absolute;
+  inset: 0 auto auto 0;
   display: flex;
   align-items: stretch;
   width: max-content;
+  transform-origin: top left;
 }
 
 /* ─── Slide card ─────────────────────────────────────────────────── */
 .slideCard {
   position: relative;
-  width: 280px;
-  min-height: 620px;
+  width: 320px;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -220,6 +280,27 @@
   cursor: grabbing;
 }
 
+.textResizeHandle {
+  position: absolute;
+  right: -8px;
+  bottom: -8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.86);
+  background:
+    linear-gradient(135deg, rgba(124, 108, 255, 0.96), rgba(111, 195, 255, 0.96));
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
+  cursor: nwse-resize;
+  touch-action: none;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
 .imageBlock {
   position: absolute;
   left: 20px;
@@ -256,14 +337,21 @@
   position: absolute;
   right: -8px;
   bottom: -8px;
-  width: 18px;
-  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  background: rgba(124, 108, 255, 0.95);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.86);
+  background:
+    linear-gradient(135deg, rgba(124, 108, 255, 0.96), rgba(111, 195, 255, 0.96));
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
   cursor: nwse-resize;
   touch-action: none;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.72rem;
+  font-weight: 900;
 }
 
 /* ─── Device wrap ────────────────────────────────────────────────── */

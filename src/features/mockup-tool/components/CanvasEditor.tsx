@@ -16,6 +16,7 @@ import {
   getRuntimeThemeColors,
 } from "@/features/mockup-tool/utils/theme-background";
 import { exportSlidePng } from "@/features/mockup-tool/utils/export-mockup";
+import { getSlidePageSize } from "@/features/mockup-tool/utils/page-size";
 
 import styles from "./CanvasEditor.module.css";
 
@@ -130,6 +131,7 @@ export function CanvasEditor({
   const hasCustomTheme =
     customThemeSettings.backgroundMode !== "preset" || Boolean(customBackgroundUrl);
   const themeColors = getRuntimeThemeColors(theme, customThemeSettings);
+  const slideSize = getSlidePageSize(draft, slide);
 
   return (
     <div className={styles.editor}>
@@ -208,6 +210,8 @@ export function CanvasEditor({
           ref={slideRef}
           className={styles.slideCard}
           style={{
+            width: slideSize.width,
+            height: slideSize.height,
             color: themeColors.slideText,
             fontFamily,
             ...getSlideCardBackgroundStyle(

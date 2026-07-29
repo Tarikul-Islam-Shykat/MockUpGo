@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { PhoneMockup } from "@/features/mockup-tool/components/PhoneMockup";
 import { getFontFamily } from "@/features/mockup-tool/data/fonts";
@@ -16,6 +16,7 @@ import {
   getSlideCardBackgroundStyle,
   getRuntimeThemeColors,
 } from "@/features/mockup-tool/utils/theme-background";
+import { getSlidePageSize } from "@/features/mockup-tool/utils/page-size";
 
 import styles from "./PreviewStage.module.css";
 
@@ -46,6 +47,11 @@ type PreviewStageProps = {
     x: number,
     y: number,
   ) => void;
+  onTextBlockResize: (
+    slideIndex: number,
+    blockId: string,
+    size: number,
+  ) => void;
   onImageBlockMove: (
     slideIndex: number,
     blockId: string,
@@ -75,14 +81,26 @@ export function PreviewStage({
   onMainTextMove,
   onPhoneMove,
   onTextBlockMove,
+  onTextBlockResize,
   onImageBlockMove,
   onImageBlockResize,
   previewRef,
 }: PreviewStageProps) {
   const fontFamily = getFontFamily(draft.font);
+  const canvasRef = useRef<HTMLDivElement | null>(null);
+  const [zoom, setZoom] = useState(100);
   const hasCustomTheme =
     customThemeSettings.backgroundMode !== "preset" || Boolean(customBackgroundUrl);
   const themeColors = getRuntimeThemeColors(theme, customThemeSettings);
+  const slideSizes = slides.map((slide) => getSlidePageSize(draft, slide));
+  const trackWidth =
+    slideSizes.reduce((total, size) => total + size.width, 0) +
+    draft.slideGap * Math.max(slides.length - 1, 0);
+  const trackHeight =
+    slideSizes.reduce((max, size) => Math.max(max, size.height), 0);
+  const zoomScale = Math.max(0.05, zoom / 100);
+  const boardWidth = Math.max(1, Math.round(trackWidth * zoomScale + 40));
+  const boardHeight = Math.max(1, Math.round(trackHeight * zoomScale + 40));
   const copyDragRef = useRef<{
     slideIndex: number;
     startX: number;
@@ -97,6 +115,13 @@ export function PreviewStage({
     startY: number;
     blockX: number;
     blockY: number;
+  } | null>(null);
+  const textResizeRef = useRef<{
+    slideIndex: number;
+    blockId: string;
+    startX: number;
+    startY: number;
+    startSize: number;
   } | null>(null);
   const phoneDragRef = useRef<{
     slideIndex: number;
@@ -121,6 +146,48 @@ export function PreviewStage({
     aspectRatio: number;
   } | null>(null);
 
+  useEffect(() => {
+    const canvasElement = canvasRef.current;
+    if (!canvasElement || trackWidth <= 0 || trackHeight <= 0) return;
+
+    const availableWidth = Math.max(320, canvasElement.clientWidth - 48);
+    const availableHeight = Math.max(320, canvasElement.clientHeight - 48);
+    const fitScale = Math.min(
+      1,
+      availableWidth / (trackWidth + 40),
+      availableHeight / (trackHeight + 40),
+    );
+
+    setZoom(Math.max(5, Math.round(fitScale * 100)));
+  }, [trackHeight, trackWidth]);
+
+  function clampZoom(value: number) {
+    return Math.max(5, Math.min(160, Math.round(value)));
+  }
+
+  function handleZoomOut() {
+    setZoom((current) => clampZoom(current - 10));
+  }
+
+  function handleZoomIn() {
+    setZoom((current) => clampZoom(current + 10));
+  }
+
+  function handleFitZoom() {
+    const canvasElement = canvasRef.current;
+    if (!canvasElement || trackWidth <= 0 || trackHeight <= 0) return;
+
+    const availableWidth = Math.max(320, canvasElement.clientWidth - 48);
+    const availableHeight = Math.max(320, canvasElement.clientHeight - 48);
+    const fitScale = Math.min(
+      1,
+      availableWidth / (trackWidth + 40),
+      availableHeight / (trackHeight + 40),
+    );
+
+    setZoom(Math.max(5, Math.round(fitScale * 100)));
+  }
+
   function handleTextBlockPointerDown(
     event: React.PointerEvent<HTMLDivElement>,
     slideIndex: number,
@@ -129,6 +196,7 @@ export function PreviewStage({
     y: number,
   ) {
     event.stopPropagation();
+    if (textResizeRef.current) return;
     onSelectSlide(slideIndex);
     onSelectCanvasItem({ kind: "text-block", slideIndex, id: blockId });
     event.currentTarget.setPointerCapture(event.pointerId);
@@ -165,11 +233,13 @@ export function PreviewStage({
     event: React.PointerEvent<HTMLDivElement>,
   ) {
     if (!copyDragRef.current) return;
+    const deltaX = (event.clientX - copyDragRef.current.startX) / zoomScale;
+    const deltaY = (event.clientY - copyDragRef.current.startY) / zoomScale;
     const nextX = Math.round(
-      copyDragRef.current.offsetX + event.clientX - copyDragRef.current.startX,
+      copyDragRef.current.offsetX + deltaX,
     );
     const nextY = Math.round(
-      copyDragRef.current.offsetY + event.clientY - copyDragRef.current.startY,
+      copyDragRef.current.offsetY + deltaY,
     );
     onMainTextMove(copyDragRef.current.slideIndex, nextX, nextY);
   }
@@ -186,12 +256,15 @@ export function PreviewStage({
   function handleTextBlockPointerMove(
     event: React.PointerEvent<HTMLDivElement>,
   ) {
+    if (textResizeRef.current) return;
     if (!dragRef.current) return;
+    const deltaX = (event.clientX - dragRef.current.startX) / zoomScale;
+    const deltaY = (event.clientY - dragRef.current.startY) / zoomScale;
     const nextX = Math.round(
-      dragRef.current.blockX + event.clientX - dragRef.current.startX,
+      dragRef.current.blockX + deltaX,
     );
     const nextY = Math.round(
-      dragRef.current.blockY + event.clientY - dragRef.current.startY,
+      dragRef.current.blockY + deltaY,
     );
     onTextBlockMove(
       dragRef.current.slideIndex,
@@ -208,6 +281,53 @@ export function PreviewStage({
       event.stopPropagation();
     }
     dragRef.current = null;
+  }
+
+  function handleTextResizePointerDown(
+    event: React.PointerEvent<HTMLDivElement>,
+    slideIndex: number,
+    blockId: string,
+    size: number,
+  ) {
+    event.stopPropagation();
+    onSelectSlide(slideIndex);
+    onSelectCanvasItem({ kind: "text-block", slideIndex, id: blockId });
+    event.currentTarget.setPointerCapture(event.pointerId);
+    textResizeRef.current = {
+      slideIndex,
+      blockId,
+      startX: event.clientX,
+      startY: event.clientY,
+      startSize: size,
+    };
+  }
+
+  function handleTextResizePointerMove(
+    event: React.PointerEvent<HTMLDivElement>,
+  ) {
+    if (!textResizeRef.current) return;
+    const delta =
+      ((event.clientX - textResizeRef.current.startX) -
+        (event.clientY - textResizeRef.current.startY)) /
+      zoomScale;
+    const nextSize = Math.max(
+      12,
+      Math.round(textResizeRef.current.startSize + delta * 0.12),
+    );
+    onTextBlockResize(
+      textResizeRef.current.slideIndex,
+      textResizeRef.current.blockId,
+      nextSize,
+    );
+  }
+
+  function handleTextResizePointerUp(
+    event: React.PointerEvent<HTMLDivElement>,
+  ) {
+    if (textResizeRef.current) {
+      event.stopPropagation();
+    }
+    textResizeRef.current = null;
   }
 
   function handlePhonePointerDown(
@@ -231,11 +351,13 @@ export function PreviewStage({
 
   function handlePhonePointerMove(event: React.PointerEvent<HTMLDivElement>) {
     if (!phoneDragRef.current) return;
+    const deltaX = (event.clientX - phoneDragRef.current.startX) / zoomScale;
+    const deltaY = (event.clientY - phoneDragRef.current.startY) / zoomScale;
     const nextX = Math.round(
-      phoneDragRef.current.offsetX + event.clientX - phoneDragRef.current.startX,
+      phoneDragRef.current.offsetX + deltaX,
     );
     const nextY = Math.round(
-      phoneDragRef.current.offsetY + event.clientY - phoneDragRef.current.startY,
+      phoneDragRef.current.offsetY + deltaY,
     );
     onPhoneMove(phoneDragRef.current.slideIndex, nextX, nextY);
   }
@@ -270,11 +392,13 @@ export function PreviewStage({
 
   function handleImagePointerMove(event: React.PointerEvent<HTMLDivElement>) {
     if (!imageDragRef.current) return;
+    const deltaX = (event.clientX - imageDragRef.current.startX) / zoomScale;
+    const deltaY = (event.clientY - imageDragRef.current.startY) / zoomScale;
     const nextX = Math.round(
-      imageDragRef.current.blockX + event.clientX - imageDragRef.current.startX,
+      imageDragRef.current.blockX + deltaX,
     );
     const nextY = Math.round(
-      imageDragRef.current.blockY + event.clientY - imageDragRef.current.startY,
+      imageDragRef.current.blockY + deltaY,
     );
     onImageBlockMove(
       imageDragRef.current.slideIndex,
@@ -317,8 +441,7 @@ export function PreviewStage({
       24,
       Math.round(
         imageResizeRef.current.startWidth +
-          event.clientX -
-          imageResizeRef.current.startX,
+          (event.clientX - imageResizeRef.current.startX) / zoomScale,
       ),
     );
     const nextHeight = Math.max(
@@ -348,233 +471,286 @@ export function PreviewStage({
       style={{ background: theme.canvasTone }}
     >
       <div className={styles.workspaceTop}>
-        <div>
+        <div className={styles.workspaceInfo}>
           <strong>{draft.projectName}</strong>
           <span>{slides.length} slide{slides.length !== 1 ? "s" : ""}</span>
         </div>
-        <p>Click a slide to select it, then drag text directly on the canvas.</p>
+        <div className={styles.zoomControls}>
+          <button type="button" onClick={handleZoomOut} aria-label="Zoom out">
+            -
+          </button>
+          <button type="button" className={styles.zoomReadout} onClick={handleFitZoom}>
+            {zoom}%
+          </button>
+          <button type="button" onClick={handleZoomIn} aria-label="Zoom in">
+            +
+          </button>
+          <button type="button" className={styles.fitButton} onClick={handleFitZoom}>
+            Fit
+          </button>
+        </div>
       </div>
 
-      <div className={styles.canvas}>
-        <div className={styles.board}>
+      <div ref={canvasRef} className={styles.canvas}>
+        <div
+          className={styles.board}
+          style={{
+            width: boardWidth,
+            height: boardHeight,
+          }}
+        >
           <div
             ref={previewRef}
             className={styles.track}
-            style={{ gap: draft.slideGap, backgroundImage: theme.canvasGrid }}
+            style={{
+              gap: draft.slideGap,
+              backgroundImage: theme.canvasGrid,
+              transform: `scale(${zoomScale})`,
+            }}
           >
-            {slides.map((slide, index) => (
-              <button
-                key={slide.id}
-                type="button"
-                className={styles.slideCard}
-                data-active={index === selectedSlideIndex}
-                onClick={() => {
-                  onSelectSlide(index);
-                  onSelectCanvasItem(null);
-                }}
-                style={{
-                  color: themeColors.slideText,
-                  fontFamily,
-                  ...getSlideCardBackgroundStyle(
-                    theme.slideBackground,
-                    hasCustomTheme,
-                  ),
-                }}
-              >
-                {hasCustomTheme ? (
-                  <div
-                    className={styles.customBackgroundLayer}
-                    style={getCustomBackgroundLayerStyle(
-                      customBackgroundUrl,
-                      customThemeSettings,
-                    )}
-                  />
-                ) : null}
-                {hasCustomTheme ? (
-                  <div
-                    className={styles.overlayLayer}
-                    style={getCustomVeilLayerStyle(customThemeSettings)}
-                  />
-                ) : theme.overlay !== "none" ? (
-                  <div
-                    className={styles.overlayLayer}
-                    style={getOverlayLayerStyle(theme.overlay, customThemeSettings)}
-                  />
-                ) : null}
-                {!hasCustomTheme && theme.decorations.map((item, decorationIndex) => (
-                  <div
-                    key={`${slide.id}-${decorationIndex}`}
-                    className={styles.decoration}
-                    style={{
-                      width: item.size,
-                      height: item.size,
-                      background: item.color,
-                      filter: `blur(${item.blur}px)`,
-                      opacity: item.opacity,
-                      top: item.top,
-                      right: item.right,
-                      bottom: item.bottom,
-                      left: item.left,
-                    }}
-                  />
-                ))}
+            {slides.map((slide, index) => {
+              const slideSize = getSlidePageSize(draft, slide);
 
-                {slide.badge.trim() ? (
-                  <div className={styles.cardHeader}>
-                    <span
-                      className={styles.badge}
-                      style={{
-                        color: themeColors.slideText,
-                        borderColor: `${themeColors.accent}44`,
-                        background: `${themeColors.accent}1a`,
-                      }}
-                    >
-                      {slide.badge}
-                    </span>
-                  </div>
-                ) : null}
-
-                <div
-                  className={styles.copy}
-                  data-draggable={index === selectedSlideIndex}
-                  data-selected={
-                    selectedCanvasItem?.kind === "main-text" &&
-                    selectedCanvasItem.slideIndex === index
-                  }
-                  onPointerDown={(event) =>
-                    handleMainCopyPointerDown(
-                      event,
-                      index,
-                      slide.textOffsetX,
-                      slide.textOffsetY,
-                    )
-                  }
-                  onPointerMove={handleMainCopyPointerMove}
-                  onPointerUp={handleMainCopyPointerUp}
-                  onPointerCancel={handleMainCopyPointerUp}
+              return (
+                <button
+                  key={slide.id}
+                  type="button"
+                  className={styles.slideCard}
+                  data-active={index === selectedSlideIndex}
+                  onClick={() => {
+                    onSelectSlide(index);
+                    onSelectCanvasItem(null);
+                  }}
                   style={{
-                    transform: `translate(${slide.textOffsetX}px, ${slide.textOffsetY}px)`,
+                    width: slideSize.width,
+                    height: slideSize.height,
+                    color: themeColors.slideText,
+                    fontFamily,
+                    ...getSlideCardBackgroundStyle(
+                      theme.slideBackground,
+                      hasCustomTheme,
+                    ),
                   }}
                 >
-                  <h3>{slide.title}</h3>
-                  <p style={{ color: themeColors.slideMuted }}>{slide.subtitle}</p>
-                </div>
-
-                {slide.extraTextBlocks.map((block) => (
-                  <div
-                    key={block.id}
-                    className={styles.floatingText}
-                    data-draggable={index === selectedSlideIndex}
-                    data-selected={
-                      selectedCanvasItem?.kind === "text-block" &&
-                      selectedCanvasItem.slideIndex === index &&
-                      selectedCanvasItem.id === block.id
-                    }
-                    onPointerDown={(event) =>
-                      handleTextBlockPointerDown(
-                        event,
-                        index,
-                        block.id,
-                        block.x,
-                        block.y,
-                      )
-                    }
-                    onPointerMove={handleTextBlockPointerMove}
-                    onPointerUp={handleTextBlockPointerUp}
-                    onPointerCancel={handleTextBlockPointerUp}
-                    style={{
-                      width: block.width,
-                      transform: `translate(${block.x}px, ${block.y}px)`,
-                      fontSize: block.size,
-                      fontWeight: block.weight,
-                      fontFamily: getFontFamily(block.font),
-                    }}
-                  >
-                    {block.text}
-                  </div>
-                ))}
-
-                {slide.imageBlocks.map((block) => (
-                  <div
-                    key={block.id}
-                    className={styles.imageBlock}
-                    data-draggable={index === selectedSlideIndex}
-                    data-selected={
-                      selectedCanvasItem?.kind === "image-block" &&
-                      selectedCanvasItem.slideIndex === index &&
-                      selectedCanvasItem.id === block.id
-                    }
-                    onPointerDown={(event) =>
-                      handleImagePointerDown(
-                        event,
-                        index,
-                        block.id,
-                        block.x,
-                        block.y,
-                      )
-                    }
-                    onPointerMove={handleImagePointerMove}
-                    onPointerUp={handleImagePointerUp}
-                    onPointerCancel={handleImagePointerUp}
-                    style={{
-                      width: block.width,
-                      height: block.height,
-                      transform: `translate(${block.x}px, ${block.y}px)`,
-                    }}
-                  >
-                    <img
-                      src={block.url}
-                      alt={block.name}
-                      className={styles.imageBlockAsset}
-                      draggable={false}
-                    />
+                  {hasCustomTheme ? (
                     <div
-                      className={styles.resizeHandle}
+                      className={styles.customBackgroundLayer}
+                      style={getCustomBackgroundLayerStyle(
+                        customBackgroundUrl,
+                        customThemeSettings,
+                      )}
+                    />
+                  ) : null}
+                  {hasCustomTheme ? (
+                    <div
+                      className={styles.overlayLayer}
+                      style={getCustomVeilLayerStyle(customThemeSettings)}
+                    />
+                  ) : theme.overlay !== "none" ? (
+                    <div
+                      className={styles.overlayLayer}
+                      style={getOverlayLayerStyle(
+                        theme.overlay,
+                        customThemeSettings,
+                      )}
+                    />
+                  ) : null}
+                  {!hasCustomTheme &&
+                    theme.decorations.map((item, decorationIndex) => (
+                      <div
+                        key={`${slide.id}-${decorationIndex}`}
+                        className={styles.decoration}
+                        style={{
+                          width: item.size,
+                          height: item.size,
+                          background: item.color,
+                          filter: `blur(${item.blur}px)`,
+                          opacity: item.opacity,
+                          top: item.top,
+                          right: item.right,
+                          bottom: item.bottom,
+                          left: item.left,
+                        }}
+                      />
+                    ))}
+
+                  {slide.badge.trim() ? (
+                    <div className={styles.cardHeader}>
+                      <span
+                        className={styles.badge}
+                        style={{
+                          color: themeColors.slideText,
+                          borderColor: `${themeColors.accent}44`,
+                          background: `${themeColors.accent}1a`,
+                        }}
+                      >
+                        {slide.badge}
+                      </span>
+                    </div>
+                  ) : null}
+
+                  <div
+                    className={styles.copy}
+                    data-draggable={index === selectedSlideIndex}
+                    data-selected={
+                      selectedCanvasItem?.kind === "main-text" &&
+                      selectedCanvasItem.slideIndex === index
+                    }
+                    onPointerDown={(event) =>
+                      handleMainCopyPointerDown(
+                        event,
+                        index,
+                        slide.textOffsetX,
+                        slide.textOffsetY,
+                      )
+                    }
+                    onPointerMove={handleMainCopyPointerMove}
+                    onPointerUp={handleMainCopyPointerUp}
+                    onPointerCancel={handleMainCopyPointerUp}
+                    style={{
+                      transform: `translate(${slide.textOffsetX}px, ${slide.textOffsetY}px)`,
+                    }}
+                  >
+                    <h3>{slide.title}</h3>
+                    <p style={{ color: themeColors.slideMuted }}>
+                      {slide.subtitle}
+                    </p>
+                  </div>
+
+                  {slide.extraTextBlocks.map((block) => (
+                    <div
+                      key={block.id}
+                      className={styles.floatingText}
+                      data-draggable={index === selectedSlideIndex}
+                      data-selected={
+                        selectedCanvasItem?.kind === "text-block" &&
+                        selectedCanvasItem.slideIndex === index &&
+                        selectedCanvasItem.id === block.id
+                      }
                       onPointerDown={(event) =>
-                        handleImageResizePointerDown(
+                        handleTextBlockPointerDown(
                           event,
                           index,
                           block.id,
-                          block.width,
-                          block.aspectRatio,
+                          block.x,
+                          block.y,
                         )
                       }
-                      onPointerMove={handleImageResizePointerMove}
-                      onPointerUp={handleImageResizePointerUp}
-                      onPointerCancel={handleImageResizePointerUp}
+                      onPointerMove={handleTextBlockPointerMove}
+                      onPointerUp={handleTextBlockPointerUp}
+                      onPointerCancel={handleTextBlockPointerUp}
+                      style={{
+                        width: block.width,
+                        transform: `translate(${block.x}px, ${block.y}px)`,
+                        fontSize: block.size,
+                        fontWeight: block.weight,
+                        fontFamily: getFontFamily(block.font),
+                      }}
+                    >
+                      {block.text}
+                      <div
+                        className={styles.textResizeHandle}
+                        data-drag-handle="true"
+                        title="Resize text"
+                        onPointerDown={(event) =>
+                          handleTextResizePointerDown(
+                            event,
+                            index,
+                            block.id,
+                            block.size,
+                          )
+                        }
+                        onPointerMove={handleTextResizePointerMove}
+                        onPointerUp={handleTextResizePointerUp}
+                        onPointerCancel={handleTextResizePointerUp}
+                      >
+                        ↘
+                      </div>
+                    </div>
+                  ))}
+
+                  {slide.imageBlocks.map((block) => (
+                    <div
+                      key={block.id}
+                      className={styles.imageBlock}
+                      data-draggable={index === selectedSlideIndex}
+                      data-selected={
+                        selectedCanvasItem?.kind === "image-block" &&
+                        selectedCanvasItem.slideIndex === index &&
+                        selectedCanvasItem.id === block.id
+                      }
+                      onPointerDown={(event) =>
+                        handleImagePointerDown(
+                          event,
+                          index,
+                          block.id,
+                          block.x,
+                          block.y,
+                        )
+                      }
+                      onPointerMove={handleImagePointerMove}
+                      onPointerUp={handleImagePointerUp}
+                      onPointerCancel={handleImagePointerUp}
+                      style={{
+                        width: block.width,
+                        height: block.height,
+                        transform: `translate(${block.x}px, ${block.y}px)`,
+                      }}
+                    >
+                      <img
+                        src={block.url}
+                        alt={block.name}
+                        className={styles.imageBlockAsset}
+                        draggable={false}
+                      />
+                      <div
+                        className={styles.resizeHandle}
+                        onPointerDown={(event) =>
+                          handleImageResizePointerDown(
+                            event,
+                            index,
+                            block.id,
+                            block.width,
+                            block.aspectRatio,
+                          )
+                        }
+                        onPointerMove={handleImageResizePointerMove}
+                        onPointerUp={handleImageResizePointerUp}
+                        onPointerCancel={handleImageResizePointerUp}
+                      />
+                    </div>
+                  ))}
+
+                  <div
+                    className={styles.deviceWrap}
+                    data-draggable={index === selectedSlideIndex}
+                    onPointerDown={(event) =>
+                      handlePhonePointerDown(
+                        event,
+                        index,
+                        slide.phoneOffsetX,
+                        slide.phoneOffsetY,
+                      )
+                    }
+                    onPointerMove={handlePhonePointerMove}
+                    onPointerUp={handlePhonePointerUp}
+                    onPointerCancel={handlePhonePointerUp}
+                    style={{
+                      transform: `translate(${slide.phoneOffsetX}px, ${slide.phoneOffsetY}px)`,
+                    }}
+                  >
+                    <PhoneMockup
+                      screenshotUrl={screenshotUrls[index]}
+                      screenshotFit={draft.screenshotFit}
+                      deviceFinish={draft.deviceFinish}
+                      framePreset={slide.framePreset}
+                      phoneTilt={draft.phoneTilt}
+                      phoneScale={draft.phoneScale}
                     />
                   </div>
-                ))}
-
-                <div
-                  className={styles.deviceWrap}
-                  data-draggable={index === selectedSlideIndex}
-                  onPointerDown={(event) =>
-                    handlePhonePointerDown(
-                      event,
-                      index,
-                      slide.phoneOffsetX,
-                      slide.phoneOffsetY,
-                    )
-                  }
-                  onPointerMove={handlePhonePointerMove}
-                  onPointerUp={handlePhonePointerUp}
-                  onPointerCancel={handlePhonePointerUp}
-                  style={{
-                    transform: `translate(${slide.phoneOffsetX}px, ${slide.phoneOffsetY}px)`,
-                  }}
-                >
-                  <PhoneMockup
-                    screenshotUrl={screenshotUrls[index]}
-                    screenshotFit={draft.screenshotFit}
-                    deviceFinish={draft.deviceFinish}
-                    framePreset={slide.framePreset}
-                    phoneTilt={draft.phoneTilt}
-                    phoneScale={draft.phoneScale}
-                  />
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

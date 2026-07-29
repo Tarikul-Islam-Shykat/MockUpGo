@@ -13,6 +13,7 @@ type ThemePanelProps = {
   customThemeSettings: CustomThemeSettings;
   onThemeSelect: (themeId: string) => void;
   onCustomBackgroundUpload: (file: File | null) => void;
+  onSetGradientTheme: () => void;
   onCustomThemeSettingsChange: <Key extends keyof CustomThemeSettings>(
     field: Key,
     value: CustomThemeSettings[Key],
@@ -29,6 +30,7 @@ export function ThemePanel({
   customThemeSettings,
   onThemeSelect,
   onCustomBackgroundUpload,
+  onSetGradientTheme,
   onCustomThemeSettingsChange,
   onResetCustomTheme,
   onResetTheme,
@@ -50,12 +52,13 @@ export function ThemePanel({
   }
 
   return (
-    <StandardThemePanel
-      themes={themes}
-      selectedThemeId={selectedThemeId}
-      onThemeSelect={onThemeSelect}
-      onCustomBackgroundUpload={onCustomBackgroundUpload}
-      onResetTheme={onResetTheme}
-    />
+      <StandardThemePanel
+        themes={themes}
+        selectedThemeId={selectedThemeId}
+        onThemeSelect={onThemeSelect}
+        onCustomBackgroundUpload={onCustomBackgroundUpload}
+        onSetGradientTheme={onSetGradientTheme}
+        onResetTheme={onResetTheme}
+      />
   );
 }

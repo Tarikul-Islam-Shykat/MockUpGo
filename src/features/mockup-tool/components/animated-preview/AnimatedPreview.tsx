@@ -17,6 +17,7 @@ import {
   getSlideCardBackgroundStyle,
   getRuntimeThemeColors,
 } from "@/features/mockup-tool/utils/theme-background";
+import { getSlidePageSize } from "@/features/mockup-tool/utils/page-size";
 
 import { renderPreviewVideo } from "./renderPreviewVideo";
 import styles from "./AnimatedPreview.module.css";
@@ -216,6 +217,8 @@ export function AnimatedPreview({
     return null;
   }
 
+  const slideSize = getSlidePageSize(draft, slide);
+
   return (
     <div className={styles.overlay}>
       <div className={styles.topBar}>
@@ -283,6 +286,8 @@ export function AnimatedPreview({
             ref={slideCardRef}
             className={styles.slideCard}
             style={{
+              width: slideSize.width,
+              height: slideSize.height,
               color: themeColors.slideText,
               fontFamily,
               ...getSlideCardBackgroundStyle(

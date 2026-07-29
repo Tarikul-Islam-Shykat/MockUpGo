@@ -10,9 +10,9 @@
   display: none;
 }
 
-.actionGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.actionStack {
+  display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 
@@ -44,6 +44,34 @@
   transform: translateY(-1px);
 }
 
+.gradientButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px 14px;
+  border-radius: var(--r-md);
+  border: 1px solid rgba(120, 194, 255, 0.2);
+  background:
+    linear-gradient(135deg, rgba(95, 178, 255, 0.12), rgba(124, 108, 255, 0.1)),
+    var(--bg-glass);
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 0.86rem;
+  cursor: pointer;
+  transition:
+    border-color var(--t-fast),
+    background var(--t-fast),
+    transform var(--t-fast);
+}
+
+.gradientButton:hover {
+  border-color: rgba(126, 200, 255, 0.34);
+  background:
+    linear-gradient(135deg, rgba(95, 178, 255, 0.16), rgba(124, 108, 255, 0.14)),
+    var(--bg-glass-hover);
+  transform: translateY(-1px);
+}
+
 .secondaryButton {
   display: flex;
   align-items: center;
@@ -65,10 +93,4 @@
   border-color: var(--border-strong);
   color: var(--text-primary);
   background: var(--bg-glass-hover);
-}
-
-@media (max-width: 520px) {
-  .actionGrid {
-    grid-template-columns: 1fr;
-  }
 }

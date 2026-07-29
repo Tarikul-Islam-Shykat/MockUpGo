@@ -30,6 +30,7 @@ type InspectorPanelProps = {
   customThemeSettings: CustomThemeSettings;
   onThemeSelect: (themeId: string) => void;
   onCustomBackgroundUpload: (file: File | null) => void;
+  onSetGradientTheme: () => void;
   onCustomThemeSettingsChange: <Key extends keyof CustomThemeSettings>(
     field: Key,
     value: CustomThemeSettings[Key],
@@ -79,6 +80,7 @@ export function InspectorPanel({
   customThemeSettings,
   onThemeSelect,
   onCustomBackgroundUpload,
+  onSetGradientTheme,
   onCustomThemeSettingsChange,
   onResetCustomTheme,
   onReturnToThemes,
@@ -121,6 +123,7 @@ export function InspectorPanel({
             customThemeSettings={customThemeSettings}
             onThemeSelect={onThemeSelect}
             onCustomBackgroundUpload={onCustomBackgroundUpload}
+            onSetGradientTheme={onSetGradientTheme}
             onCustomThemeSettingsChange={onCustomThemeSettingsChange}
             onResetCustomTheme={onResetCustomTheme}
             onReturnToThemes={onReturnToThemes}
@@ -171,7 +174,14 @@ export function InspectorPanel({
       {/* ── STYLE TAB ──────────────────────────────────────────────── */}
       {activeTab === "style" ? (
         <section className={styles.section}>
-          <StylePanel draft={draft} onDraftChange={onDraftChange} />
+          <StylePanel
+            draft={draft}
+            slides={slides}
+            slide={slides[selectedSlideIndex]}
+            selectedSlideIndex={selectedSlideIndex}
+            onDraftChange={onDraftChange}
+            onSlideChange={onSlideChange}
+          />
         </section>
       ) : null}
 

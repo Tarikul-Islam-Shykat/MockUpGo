@@ -1,27 +1,23 @@
 /* ─── Rail ───────────────────────────────────────────────────────── */
 .rail {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  padding-right: 4px;
 }
 
 /* ─── Card ───────────────────────────────────────────────────────── */
 .card {
-  display: grid;
-  grid-template-columns: 60px 1fr;
-  gap: 12px;
+  display: flex;
   align-items: center;
+  justify-content: center;
   width: 100%;
+  min-height: 72px;
   padding: 10px;
-  border-radius: var(--r-lg);
+  border-radius: var(--r-md);
   border: 1px solid var(--border-subtle);
   background: var(--bg-elevated);
-  text-align: left;
   color: inherit;
   transition:
     transform var(--t-mid),
@@ -44,30 +40,16 @@
 
 /* ─── Swatch ─────────────────────────────────────────────────────── */
 .swatch {
-  width: 60px;
-  height: 60px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
   border-radius: var(--r-md);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: var(--shadow-sm);
   flex-shrink: 0;
 }
 
-/* ─── Copy ───────────────────────────────────────────────────────── */
-.copy {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.copy strong {
-  font-size: 0.88rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  letter-spacing: -0.01em;
-}
-
-.copy span {
-  color: var(--text-soft);
-  line-height: 1.4;
-  font-size: 0.78rem;
+@media (max-width: 520px) {
+  .rail {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }

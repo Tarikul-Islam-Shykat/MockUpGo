@@ -25,6 +25,7 @@ export function TemplateRail({
             className={styles.card}
             data-active={isActive}
             onClick={() => onSelect(template.id)}
+            title={template.name}
           >
             <div
               className={styles.swatch}
@@ -32,10 +33,6 @@ export function TemplateRail({
                 background: `${template.overlay}, ${template.slideBackground}`,
               }}
             />
-            <div className={styles.copy}>
-              <strong>{template.name}</strong>
-              <span>{template.summary}</span>
-            </div>
           </button>
         );
       })}

@@ -133,7 +133,7 @@
 .slideCard {
   position: relative;
   width: 320px;
-  min-height: 700px;
+  min-height: 0;
   border-radius: 28px;
   overflow: hidden;
   box-shadow:

@@ -177,6 +177,7 @@
   position: relative;
   width: 320px;
   height: 680px;
+  min-height: 0;
   border-radius: 32px;
   overflow: hidden;
   box-shadow:

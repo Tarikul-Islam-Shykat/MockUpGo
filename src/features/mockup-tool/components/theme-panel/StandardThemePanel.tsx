@@ -8,6 +8,7 @@ type StandardThemePanelProps = {
   selectedThemeId: string;
   onThemeSelect: (themeId: string) => void;
   onCustomBackgroundUpload: (file: File | null) => void;
+  onSetGradientTheme: () => void;
   onResetTheme: () => void;
 };
 
@@ -16,6 +17,7 @@ export function StandardThemePanel({
   selectedThemeId,
   onThemeSelect,
   onCustomBackgroundUpload,
+  onSetGradientTheme,
   onResetTheme,
 }: StandardThemePanelProps) {
   return (
@@ -26,7 +28,7 @@ export function StandardThemePanel({
         onSelect={onThemeSelect}
       />
 
-      <div className={styles.actionGrid}>
+      <div className={styles.actionStack}>
         <label className={styles.primaryButton}>
           <input
             type="file"
@@ -42,10 +44,18 @@ export function StandardThemePanel({
 
         <button
           type="button"
+          className={styles.gradientButton}
+          onClick={onSetGradientTheme}
+        >
+          Set gradient theme
+        </button>
+
+        <button
+          type="button"
           className={styles.secondaryButton}
           onClick={onResetTheme}
         >
-          Reset theme defaults
+          Reset to default
         </button>
       </div>
     </div>
