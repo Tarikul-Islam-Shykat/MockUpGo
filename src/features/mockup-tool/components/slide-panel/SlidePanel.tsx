@@ -1,4 +1,9 @@
-import type { ScreenshotAsset, SlideDraft } from "@/features/mockup-tool/types";
+import { phoneFrameOptions } from "@/features/mockup-tool/data/phone-frames";
+import type {
+  PhoneFramePreset,
+  ScreenshotAsset,
+  SlideDraft,
+} from "@/features/mockup-tool/types";
 
 import styles from "./SlidePanel.module.css";
 
@@ -10,6 +15,7 @@ type SlidePanelProps = {
   slideScreenshotAssetIds: Array<string | null>;
   screenshotNames: Array<string | null>;
   onSelectedSlideChange: (index: number) => void;
+  onSlideFrameChange: (index: number, framePreset: PhoneFramePreset) => void;
   onAssignScreenshotToSlide: (index: number, assetId: string | null) => void;
   onRemoveScreenshotAsset: (assetId: string) => void;
   onSlideScreenshotChange: (index: number, file: File | null) => void;
@@ -26,6 +32,7 @@ export function SlidePanel({
   slideScreenshotAssetIds,
   screenshotNames,
   onSelectedSlideChange,
+  onSlideFrameChange,
   onAssignScreenshotToSlide,
   onRemoveScreenshotAsset,
   onSlideScreenshotChange,
@@ -33,6 +40,7 @@ export function SlidePanel({
   onAddSlide,
   onRemoveSlide,
 }: SlidePanelProps) {
+  const selectedSlide = slides[selectedSlideIndex];
   const selectedScreenshotName = screenshotNames[selectedSlideIndex];
   const selectedSlideScreenshotId = slideScreenshotAssetIds[selectedSlideIndex];
 
@@ -105,6 +113,41 @@ export function SlidePanel({
             )}
           </div>
         ))}
+      </div>
+
+      <div className={styles.divider} />
+      <div className={styles.fieldGroupLabel}>Selected slide setup</div>
+
+      {phoneFrameOptions.length > 1 ? (
+        <label className={styles.field}>
+          <span>Phone frame</span>
+          <select
+            value={selectedSlide.framePreset}
+            onChange={(event) =>
+              onSlideFrameChange(
+                selectedSlideIndex,
+                event.target.value as PhoneFramePreset,
+              )
+            }
+          >
+            {phoneFrameOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
+
+      <div className={styles.selectionCard}>
+        <strong>Phone frame</strong>
+        <span>
+          {
+            phoneFrameOptions.find(
+              (option) => option.value === selectedSlide.framePreset,
+            )?.description
+          }
+        </span>
       </div>
 
       <div className={styles.divider} />

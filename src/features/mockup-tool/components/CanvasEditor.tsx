@@ -35,7 +35,6 @@ type CanvasEditorProps = {
   screenshotUrl: string | null;
   customBackgroundUrl?: string | null;
   customThemeSettings: CustomThemeSettings;
-  use3D?: boolean;
   onBack: () => void;
   onScreenshotChange: (index: number, file: File | null) => void;
   onSlideChange: <Key extends keyof SlideDraft>(
@@ -56,7 +55,6 @@ export function CanvasEditor({
   screenshotUrl,
   customBackgroundUrl = null,
   customThemeSettings,
-  use3D = false,
   onBack,
   onScreenshotChange,
   onSlideChange,
@@ -66,7 +64,6 @@ export function CanvasEditor({
   const slideRef   = useRef<HTMLDivElement>(null);
   const fileInput  = useRef<HTMLInputElement>(null);
   const [isExporting, setIsExporting] = useState(false);
-  const [isDragOver, setIsDragOver]   = useState(false);
 
   const textDrag = useRef<DragRef>({ active:false, startX:0, startY:0, startOffsetX:0, startOffsetY:0 });
   const phoneDrag = useRef<DragRef>({ active:false, startX:0, startY:0, startOffsetX:0, startOffsetY:0 });
@@ -115,18 +112,6 @@ export function CanvasEditor({
     handleFileAccepted(e.target.files?.[0] ?? null);
     e.target.value = ""; // allow re-selecting same file
   }
-  function handleDrop(e: React.DragEvent) {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragOver(false);
-    handleFileAccepted(e.dataTransfer.files[0] ?? null);
-  }
-  function handleDragOver(e: React.DragEvent) {
-    e.preventDefault();
-    setIsDragOver(true);
-  }
-  function handleDragLeave() { setIsDragOver(false); }
-
   /* ── Export ─────────────────────────────────────────────────────── */
   async function handleExportSlide() {
     if (!slideRef.current) return;
@@ -289,7 +274,7 @@ export function CanvasEditor({
               className={styles.phoneBlock}
               style={{
                 transform: `translate(${slide.phoneOffsetX}px, ${slide.phoneOffsetY}px)`,
-                cursor: use3D ? "grab" : undefined,
+                cursor: "grab",
               }}
               onPointerDown={handlePhonePointerDown}
               onPointerMove={handlePhonePointerMove}
@@ -297,44 +282,13 @@ export function CanvasEditor({
             >
               <div className={styles.dragHandle} data-drag-handle="true">⠿ Phone</div>
 
-              {/* ── Big upload zone — shown OVER phone when no screenshot ── */}
-              {!hasScreenshot && (
-                <label
-                  className={`${styles.uploadZone} ${isDragOver ? styles.uploadZoneDragOver : ""}`}
-                  data-upload-zone="true"
-                  data-drag-handle="true"
-                  onDrop={handleDrop}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                >
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className={styles.hiddenInput}
-                    onChange={handleInputChange}
-                  />
-                  <div className={styles.uploadZoneInner}>
-                    <div className={styles.uploadIcon}>
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                        <circle cx="8.5" cy="8.5" r="1.5" />
-                        <polyline points="21 15 16 10 5 21" />
-                      </svg>
-                    </div>
-                    <strong className={styles.uploadTitle}>Upload Screenshot</strong>
-                    <span className={styles.uploadSub}>Click here or drag &amp; drop your app screenshot</span>
-                    <span className={styles.uploadHint}>PNG · JPG · WebP</span>
-                  </div>
-                </label>
-              )}
-
               <PhoneMockup
                 screenshotUrl={screenshotUrl}
                 screenshotFit={draft.screenshotFit}
                 deviceFinish={draft.deviceFinish}
+                framePreset={slide.framePreset}
                 phoneTilt={draft.phoneTilt}
                 phoneScale={100}
-                render3D={use3D}
               />
             </div>
           </div>

@@ -148,6 +148,7 @@ export function PreviewStage({
                     screenshotUrl={screenshotUrls[index]}
                     screenshotFit={draft.screenshotFit}
                     deviceFinish={draft.deviceFinish}
+                    framePreset={slide.framePreset}
                     phoneTilt={draft.phoneTilt}
                     phoneScale={draft.phoneScale}
                   />

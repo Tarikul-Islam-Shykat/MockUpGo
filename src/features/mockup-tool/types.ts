@@ -2,6 +2,8 @@ export type DeviceFinish = "obsidian" | "silver" | "champagne";
 
 export type ScreenshotFit = "cover" | "contain";
 
+export type PhoneFramePreset = "svg-classic";
+
 export type ToolTab = "theme" | "slides" | "text" | "style" | "export";
 
 export type FontOption =
@@ -32,6 +34,7 @@ export type SlideDraft = {
   title: string;
   subtitle: string;
   badge: string;
+  framePreset: PhoneFramePreset;
   textOffsetX: number;
   textOffsetY: number;
   phoneOffsetX: number;

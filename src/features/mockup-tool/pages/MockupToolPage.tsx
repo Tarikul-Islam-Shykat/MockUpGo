@@ -5,6 +5,7 @@ import { CanvasEditor } from "@/features/mockup-tool/components/CanvasEditor";
 import { InspectorPanel } from "@/features/mockup-tool/components/InspectorPanel";
 import { PreviewStage } from "@/features/mockup-tool/components/PreviewStage";
 import { ToolRail } from "@/features/mockup-tool/components/ToolRail";
+import { getPhoneFrameLabel } from "@/features/mockup-tool/data/phone-frames";
 import {
   createBlankSlide,
   createDraftFromTheme,
@@ -77,7 +78,6 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
   const [isZipping, setIsZipping] = useState(false);
   const [zipProgress, setZipProgress] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
-  const [use3D, setUse3D] = useState(true);
   const previewRef = useRef<HTMLDivElement>(null);
   const screenshotAssetsRef = useRef<ScreenshotAsset[]>([]);
   const customBackgroundRef = useRef<CustomBackgroundAsset | null>(null);
@@ -93,6 +93,7 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
   const screenshotNames = slideScreenshotAssetIds.map(
     (assetId) => (assetId ? screenshotLookup.get(assetId)?.name ?? null : null),
   );
+  const selectedSlide = slides[selectedSlideIndex];
 
   useEffect(() => {
     screenshotAssetsRef.current = screenshotAssets;
@@ -354,31 +355,11 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
         </div>
 
         <div className={styles.toolbarActions}>
-          <span className={styles.deviceBadge}>iPhone 6.9"</span>
-          {/* 3D device toggle */}
-          <button
-            type="button"
-            className={`${styles.previewBtn} ${use3D ? styles.active3DBtn : ""}`}
-            onClick={() => setUse3D((v) => !v)}
-            title={use3D ? "Switch to flat device" : "Switch to 3D device"}
-          >
-            {use3D ? (
-              <>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                </svg>
-                3D On
-              </>
-            ) : (
-              <>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
-                  <line x1="12" y1="18" x2="12.01" y2="18" />
-                </svg>
-                Flat
-              </>
-            )}
-          </button>
+          <span className={styles.deviceBadge}>
+            {selectedSlide
+              ? getPhoneFrameLabel(selectedSlide.framePreset)
+              : "Classic SVG"}
+          </span>
           <button
             type="button"
             className={styles.previewBtn}
@@ -422,7 +403,6 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
             screenshotUrl={screenshotUrls[selectedSlideIndex]}
             customBackgroundUrl={customBackground?.url ?? null}
             customThemeSettings={customThemeSettings}
-            use3D={use3D}
             onBack={handleExitCanvas}
             onScreenshotChange={setSlideScreenshot}
             onSlideChange={updateSlide}
@@ -467,6 +447,9 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
           onSlideChange={updateSlide}
           onSelectedSlideChange={(index) => {
             setSelectedSlideIndex(index);
+          }}
+          onSlideFrameChange={(index, framePreset) => {
+            updateSlide(index, "framePreset", framePreset);
           }}
           onAssignScreenshotToSlide={assignScreenshotToSlide}
           onRemoveScreenshotAsset={handleRemoveScreenshotAsset}

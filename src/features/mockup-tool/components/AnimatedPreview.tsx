@@ -531,6 +531,7 @@ export function AnimatedPreview({
                   screenshotUrl={screenshotUrls[currentIndex]}
                   screenshotFit={draft.screenshotFit}
                   deviceFinish={draft.deviceFinish}
+                  framePreset={slide.framePreset}
                   phoneTilt={draft.phoneTilt}
                   phoneScale={100}
                 />

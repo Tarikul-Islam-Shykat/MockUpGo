@@ -7,6 +7,7 @@ import type {
   CustomThemeSettings,
   EditorDraft,
   MockupTheme,
+  PhoneFramePreset,
   ScreenshotAsset,
   SlideDraft,
   ToolTab,
@@ -43,6 +44,7 @@ type InspectorPanelProps = {
     value: SlideDraft[Key],
   ) => void;
   onSelectedSlideChange: (index: number) => void;
+  onSlideFrameChange: (index: number, framePreset: PhoneFramePreset) => void;
   onAssignScreenshotToSlide: (index: number, assetId: string | null) => void;
   onRemoveScreenshotAsset: (assetId: string) => void;
   onSlideScreenshotChange: (index: number, file: File | null) => void;
@@ -77,6 +79,7 @@ export function InspectorPanel({
   onDraftChange,
   onSlideChange,
   onSelectedSlideChange,
+  onSlideFrameChange,
   onAssignScreenshotToSlide,
   onRemoveScreenshotAsset,
   onSlideScreenshotChange,
@@ -128,6 +131,7 @@ export function InspectorPanel({
             slideScreenshotAssetIds={slideScreenshotAssetIds}
             screenshotNames={screenshotNames}
             onSelectedSlideChange={onSelectedSlideChange}
+            onSlideFrameChange={onSlideFrameChange}
             onAssignScreenshotToSlide={onAssignScreenshotToSlide}
             onRemoveScreenshotAsset={onRemoveScreenshotAsset}
             onSlideScreenshotChange={onSlideScreenshotChange}
