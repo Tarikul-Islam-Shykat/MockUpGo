@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import { AnimatedPreview } from "@/features/mockup-tool/components/AnimatedPreview";
+import { AnimatedPreview } from "@/features/mockup-tool/components/animated-preview/AnimatedPreview";
 import { InspectorPanel } from "@/features/mockup-tool/components/InspectorPanel";
 import { PreviewStage } from "@/features/mockup-tool/components/PreviewStage";
 import { ToolRail } from "@/features/mockup-tool/components/ToolRail";
