@@ -29,17 +29,46 @@ export type ThemeDecoration = {
   left?: string;
 };
 
+export type SlideTextBlock = {
+  id: string;
+  text: string;
+  x: number;
+  y: number;
+  size: number;
+  width: number;
+  weight: 500 | 700 | 900;
+  font: FontOption;
+};
+
+export type SlideImageBlock = {
+  id: string;
+  name: string;
+  url: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  aspectRatio: number;
+};
+
 export type SlideDraft = {
   id: string;
   title: string;
   subtitle: string;
   badge: string;
   framePreset: PhoneFramePreset;
+  extraTextBlocks: SlideTextBlock[];
+  imageBlocks: SlideImageBlock[];
   textOffsetX: number;
   textOffsetY: number;
   phoneOffsetX: number;
   phoneOffsetY: number;
 };
+
+export type CanvasSelection =
+  | { kind: "main-text"; slideIndex: number }
+  | { kind: "text-block"; slideIndex: number; id: string }
+  | { kind: "image-block"; slideIndex: number; id: string };
 
 export type ScreenshotAsset = {
   id: string;

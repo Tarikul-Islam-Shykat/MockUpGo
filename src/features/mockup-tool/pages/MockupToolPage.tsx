@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
 import { AnimatedPreview } from "@/features/mockup-tool/components/AnimatedPreview";
-import { CanvasEditor } from "@/features/mockup-tool/components/CanvasEditor";
 import { InspectorPanel } from "@/features/mockup-tool/components/InspectorPanel";
 import { PreviewStage } from "@/features/mockup-tool/components/PreviewStage";
 import { ToolRail } from "@/features/mockup-tool/components/ToolRail";
@@ -13,10 +12,13 @@ import {
   mockupThemes,
 } from "@/features/mockup-tool/data/mockup-templates";
 import type {
+  CanvasSelection,
   CustomThemeSettings,
   EditorDraft,
   ScreenshotAsset,
   SlideDraft,
+  SlideImageBlock,
+  SlideTextBlock,
   ToolTab,
 } from "@/features/mockup-tool/types";
 import { exportMockupAsPng, exportMockupAsZip } from "@/features/mockup-tool/utils/export-mockup";
@@ -52,6 +54,14 @@ type CustomBackgroundAsset = {
   url: string;
 };
 
+function revokeSlideImageUrls(slides: SlideDraft[]) {
+  slides.forEach((slide) => {
+    slide.imageBlocks.forEach((block) => {
+      URL.revokeObjectURL(block.url);
+    });
+  });
+}
+
 export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
   const [draft, setDraft] = useState<EditorDraft>(
     createDraftFromTheme(initialTheme),
@@ -61,7 +71,6 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
   );
   const [activeTab, setActiveTab] = useState<ToolTab>("slides");
   const [selectedSlideIndex, setSelectedSlideIndex] = useState(0);
-  const [canvasMode, setCanvasMode] = useState(false);
   const [screenshotAssets, setScreenshotAssets] = useState<ScreenshotAsset[]>(
     [],
   );
@@ -78,9 +87,12 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
   const [isZipping, setIsZipping] = useState(false);
   const [zipProgress, setZipProgress] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
+  const [selectedCanvasItem, setSelectedCanvasItem] =
+    useState<CanvasSelection | null>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const screenshotAssetsRef = useRef<ScreenshotAsset[]>([]);
   const customBackgroundRef = useRef<CustomBackgroundAsset | null>(null);
+  const slidesRef = useRef<SlideDraft[]>([]);
 
   const selectedTheme =
     mockupThemes.find((theme) => theme.id === draft.themeId) ?? initialTheme;
@@ -104,6 +116,57 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
   }, [customBackground]);
 
   useEffect(() => {
+    slidesRef.current = slides;
+  }, [slides]);
+
+  useEffect(() => {
+    function handleDeleteSelected(event: KeyboardEvent) {
+      if (!selectedCanvasItem) return;
+      if (event.key !== "Delete" && event.key !== "Backspace") return;
+
+      const target = event.target as HTMLElement | null;
+      const tagName = target?.tagName ?? "";
+      const isTypingTarget =
+        tagName === "INPUT" ||
+        tagName === "TEXTAREA" ||
+        tagName === "SELECT" ||
+        target?.isContentEditable;
+
+      if (isTypingTarget) return;
+
+      if (selectedCanvasItem.kind === "text-block") {
+        setSlides((current) =>
+          current.map((slide, slideIndex) =>
+            slideIndex === selectedCanvasItem.slideIndex
+              ? {
+                  ...slide,
+                  extraTextBlocks: slide.extraTextBlocks.filter(
+                    (block) => block.id !== selectedCanvasItem.id,
+                  ),
+                }
+              : slide,
+          ),
+        );
+        setSelectedCanvasItem(null);
+        event.preventDefault();
+        return;
+      }
+
+      if (selectedCanvasItem.kind === "image-block") {
+        removeSlideImageBlock(
+          selectedCanvasItem.slideIndex,
+          selectedCanvasItem.id,
+        );
+        setSelectedCanvasItem(null);
+        event.preventDefault();
+      }
+    }
+
+    window.addEventListener("keydown", handleDeleteSelected);
+    return () => window.removeEventListener("keydown", handleDeleteSelected);
+  }, [selectedCanvasItem]);
+
+  useEffect(() => {
     return () => {
       screenshotAssetsRef.current.forEach((asset) => {
         URL.revokeObjectURL(asset.url);
@@ -111,6 +174,7 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
       if (customBackgroundRef.current) {
         URL.revokeObjectURL(customBackgroundRef.current.url);
       }
+      revokeSlideImageUrls(slidesRef.current);
     };
   }, []);
 
@@ -185,6 +249,7 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
     const theme = mockupThemes.find((item) => item.id === themeId);
     if (!theme) return;
     const nextSlides = createSlidesFromTheme(theme);
+    revokeSlideImageUrls(slides);
     setDraft((current) => ({
       ...createDraftFromTheme(theme),
       projectName: current.projectName,
@@ -196,7 +261,6 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
       resizeSlideAssignments(current, nextSlides.length),
     );
     setSelectedSlideIndex((current) => Math.min(current, nextSlides.length - 1));
-    setCanvasMode(false);
   }
 
   function assignScreenshotToSlide(index: number, assetId: string | null) {
@@ -238,6 +302,7 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
 
   function handleResetTheme() {
     const nextSlides = createSlidesFromTheme(selectedTheme);
+    revokeSlideImageUrls(slides);
     setDraft((current) => ({
       ...createDraftFromTheme(selectedTheme),
       projectName: current.projectName,
@@ -260,6 +325,7 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
 
   function handleRemoveSlide(index: number) {
     if (slides.length <= 1) return;
+    revokeSlideImageUrls([slides[index]]);
     setSlides((current) => current.filter((_, i) => i !== index));
     setSlideScreenshotAssetIds((current) =>
       current.filter((_, itemIndex) => itemIndex !== index),
@@ -268,9 +334,105 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
     setSelectedSlideIndex((current) =>
       current >= index && current > 0 ? current - 1 : current,
     );
-    if (canvasMode && selectedSlideIndex === index) {
-      setCanvasMode(false);
-    }
+  }
+
+  function updateSlideTextBlock(
+    index: number,
+    blockId: string,
+    patch: Partial<SlideTextBlock>,
+  ) {
+    setSlides((current) =>
+      current.map((slide, slideIndex) =>
+        slideIndex === index
+          ? {
+              ...slide,
+              extraTextBlocks: slide.extraTextBlocks.map((block) =>
+                block.id === blockId ? { ...block, ...patch } : block,
+              ),
+            }
+          : slide,
+      ),
+    );
+  }
+
+  function updateSlideImageBlock(
+    index: number,
+    blockId: string,
+    patch: Partial<SlideImageBlock>,
+  ) {
+    setSlides((current) =>
+      current.map((slide, slideIndex) =>
+        slideIndex === index
+          ? {
+              ...slide,
+              imageBlocks: slide.imageBlocks.map((block) =>
+                block.id === blockId ? { ...block, ...patch } : block,
+              ),
+            }
+          : slide,
+      ),
+    );
+  }
+
+  function addSlideImageBlock(index: number, file: File | null) {
+    if (!file || !file.type.startsWith("image/")) return;
+
+    const url = URL.createObjectURL(file);
+    const image = new Image();
+
+    image.onload = () => {
+      const aspectRatio =
+        image.naturalWidth > 0 && image.naturalHeight > 0
+          ? image.naturalWidth / image.naturalHeight
+          : 1;
+      const width = 88;
+      const height = Math.max(24, Math.round(width / aspectRatio));
+
+      setSlides((current) =>
+        current.map((slide, slideIndex) =>
+          slideIndex === index
+            ? {
+                ...slide,
+                imageBlocks: [
+                  ...slide.imageBlocks,
+                  {
+                    id: crypto.randomUUID(),
+                    name: file.name,
+                    url,
+                    x: 0,
+                    y: 0,
+                    width,
+                    height,
+                    aspectRatio,
+                  },
+                ],
+              }
+            : slide,
+        ),
+      );
+    };
+
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+    };
+
+    image.src = url;
+  }
+
+  function removeSlideImageBlock(index: number, blockId: string) {
+    setSlides((current) =>
+      current.map((slide, slideIndex) => {
+        if (slideIndex !== index) return slide;
+        const block = slide.imageBlocks.find((item) => item.id === blockId);
+        if (block) {
+          URL.revokeObjectURL(block.url);
+        }
+        return {
+          ...slide,
+          imageBlocks: slide.imageBlocks.filter((item) => item.id !== blockId),
+        };
+      }),
+    );
   }
 
   async function handleExport() {
@@ -309,11 +471,7 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
   function handleSelectSlide(index: number) {
     setSelectedSlideIndex(index);
     setActiveTab("text");
-    setCanvasMode(true);
-  }
-
-  function handleExitCanvas() {
-    setCanvasMode(false);
+    setSelectedCanvasItem(null);
   }
 
   function handleRemoveScreenshotAsset(assetId: string) {
@@ -344,7 +502,7 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
             <img src="/logo.png" alt="MockUpGo Logo" className={styles.logoImg} />
             <div>
               <strong>MockUpGo</strong>
-              <span>{canvasMode ? "Canvas Mode" : "Editor"}</span>
+              <span>Editor</span>
             </div>
           </div>
         </div>
@@ -393,41 +551,38 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
       <main className={styles.workspaceShell}>
         <ToolRail activeTab={activeTab} onChange={setActiveTab} />
 
-        {canvasMode ? (
-          <CanvasEditor
-            theme={selectedTheme}
-            draft={draft}
-            slide={slides[selectedSlideIndex]}
-            slideIndex={selectedSlideIndex}
-            totalSlides={slides.length}
-            screenshotUrl={screenshotUrls[selectedSlideIndex]}
-            customBackgroundUrl={customBackground?.url ?? null}
-            customThemeSettings={customThemeSettings}
-            onBack={handleExitCanvas}
-            onScreenshotChange={setSlideScreenshot}
-            onSlideChange={updateSlide}
-            onPrevSlide={() =>
-              setSelectedSlideIndex((i) => Math.max(0, i - 1))
-            }
-            onNextSlide={() =>
-              setSelectedSlideIndex((i) => Math.min(slides.length - 1, i + 1))
-            }
-          />
-        ) : (
-          <PreviewStage
-            theme={selectedTheme}
-            draft={draft}
-            slides={slides}
-            screenshotUrls={screenshotUrls}
-            customBackgroundUrl={customBackground?.url ?? null}
-            customThemeSettings={customThemeSettings}
-            selectedSlideIndex={selectedSlideIndex}
-            onSelectSlide={handleSelectSlide}
-            previewRef={previewRef}
-          />
-        )}
+        <PreviewStage
+          theme={selectedTheme}
+          draft={draft}
+          slides={slides}
+          screenshotUrls={screenshotUrls}
+          customBackgroundUrl={customBackground?.url ?? null}
+          customThemeSettings={customThemeSettings}
+          selectedSlideIndex={selectedSlideIndex}
+          onSelectSlide={handleSelectSlide}
+          selectedCanvasItem={selectedCanvasItem}
+          onSelectCanvasItem={setSelectedCanvasItem}
+          onMainTextMove={(slideIndex, x, y) => {
+            updateSlide(slideIndex, "textOffsetX", x);
+            updateSlide(slideIndex, "textOffsetY", y);
+          }}
+          onPhoneMove={(slideIndex, x, y) => {
+            updateSlide(slideIndex, "phoneOffsetX", x);
+            updateSlide(slideIndex, "phoneOffsetY", y);
+          }}
+          onTextBlockMove={(slideIndex, blockId, x, y) => {
+            updateSlideTextBlock(slideIndex, blockId, { x, y });
+          }}
+          onImageBlockMove={(slideIndex, blockId, x, y) => {
+            updateSlideImageBlock(slideIndex, blockId, { x, y });
+          }}
+          onImageBlockResize={(slideIndex, blockId, width, height) => {
+            updateSlideImageBlock(slideIndex, blockId, { width, height });
+          }}
+          previewRef={previewRef}
+        />
 
-        <InspectorPanel
+          <InspectorPanel
           activeTab={activeTab}
           draft={draft}
           slides={slides}
@@ -436,9 +591,10 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
           screenshotLibrary={screenshotAssets}
           slideScreenshotAssetIds={slideScreenshotAssetIds}
           screenshotNames={screenshotNames}
-          customBackgroundName={customBackground?.name ?? null}
-          customThemeSettings={customThemeSettings}
-          onThemeSelect={handleThemeSelect}
+            customBackgroundName={customBackground?.name ?? null}
+            customThemeSettings={customThemeSettings}
+            selectedCanvasItem={selectedCanvasItem}
+            onThemeSelect={handleThemeSelect}
           onCustomBackgroundUpload={handleCustomBackgroundUpload}
           onClearCustomBackground={handleClearCustomBackground}
           onCustomThemeSettingsChange={updateCustomThemeSettings}
@@ -454,8 +610,34 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
           onAssignScreenshotToSlide={assignScreenshotToSlide}
           onRemoveScreenshotAsset={handleRemoveScreenshotAsset}
           onSlideScreenshotChange={setSlideScreenshot}
-          onScreenshotLibraryUpload={handleLibraryUpload}
-          onResetTheme={handleResetTheme}
+            onScreenshotLibraryUpload={handleLibraryUpload}
+            onAddSlideImageBlock={addSlideImageBlock}
+            onRemoveSlideImageBlock={removeSlideImageBlock}
+            onDeleteSelectedCanvasItem={() => {
+              if (!selectedCanvasItem) return;
+              if (selectedCanvasItem.kind === "text-block") {
+                setSlides((current) =>
+                  current.map((slide, slideIndex) =>
+                    slideIndex === selectedCanvasItem.slideIndex
+                      ? {
+                          ...slide,
+                          extraTextBlocks: slide.extraTextBlocks.filter(
+                            (block) => block.id !== selectedCanvasItem.id,
+                          ),
+                        }
+                      : slide,
+                  ),
+                );
+              }
+              if (selectedCanvasItem.kind === "image-block") {
+                removeSlideImageBlock(
+                  selectedCanvasItem.slideIndex,
+                  selectedCanvasItem.id,
+                );
+              }
+              setSelectedCanvasItem(null);
+            }}
+            onResetTheme={handleResetTheme}
           onExport={handleExport}
           onAddSlide={handleAddSlide}
           onRemoveSlide={handleRemoveSlide}

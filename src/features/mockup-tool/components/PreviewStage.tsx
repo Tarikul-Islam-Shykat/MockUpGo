@@ -1,6 +1,9 @@
+import { useRef } from "react";
+
 import { PhoneMockup } from "@/features/mockup-tool/components/PhoneMockup";
 import { getFontFamily } from "@/features/mockup-tool/data/fonts";
 import type {
+  CanvasSelection,
   CustomThemeSettings,
   EditorDraft,
   MockupTheme,
@@ -24,6 +27,36 @@ type PreviewStageProps = {
   customThemeSettings: CustomThemeSettings;
   selectedSlideIndex: number;
   onSelectSlide: (index: number) => void;
+  selectedCanvasItem: CanvasSelection | null;
+  onSelectCanvasItem: (selection: CanvasSelection | null) => void;
+  onMainTextMove: (
+    slideIndex: number,
+    x: number,
+    y: number,
+  ) => void;
+  onPhoneMove: (
+    slideIndex: number,
+    x: number,
+    y: number,
+  ) => void;
+  onTextBlockMove: (
+    slideIndex: number,
+    blockId: string,
+    x: number,
+    y: number,
+  ) => void;
+  onImageBlockMove: (
+    slideIndex: number,
+    blockId: string,
+    x: number,
+    y: number,
+  ) => void;
+  onImageBlockResize: (
+    slideIndex: number,
+    blockId: string,
+    width: number,
+    height: number,
+  ) => void;
   previewRef: React.RefObject<HTMLDivElement | null>;
 };
 
@@ -36,10 +69,275 @@ export function PreviewStage({
   customThemeSettings,
   selectedSlideIndex,
   onSelectSlide,
+  selectedCanvasItem,
+  onSelectCanvasItem,
+  onMainTextMove,
+  onPhoneMove,
+  onTextBlockMove,
+  onImageBlockMove,
+  onImageBlockResize,
   previewRef,
 }: PreviewStageProps) {
   const fontFamily = getFontFamily(draft.font);
   const hasCustomTheme = Boolean(customBackgroundUrl);
+  const copyDragRef = useRef<{
+    slideIndex: number;
+    startX: number;
+    startY: number;
+    offsetX: number;
+    offsetY: number;
+  } | null>(null);
+  const dragRef = useRef<{
+    slideIndex: number;
+    blockId: string;
+    startX: number;
+    startY: number;
+    blockX: number;
+    blockY: number;
+  } | null>(null);
+  const phoneDragRef = useRef<{
+    slideIndex: number;
+    startX: number;
+    startY: number;
+    offsetX: number;
+    offsetY: number;
+  } | null>(null);
+  const imageDragRef = useRef<{
+    slideIndex: number;
+    blockId: string;
+    startX: number;
+    startY: number;
+    blockX: number;
+    blockY: number;
+  } | null>(null);
+  const imageResizeRef = useRef<{
+    slideIndex: number;
+    blockId: string;
+    startX: number;
+    startWidth: number;
+    aspectRatio: number;
+  } | null>(null);
+
+  function handleTextBlockPointerDown(
+    event: React.PointerEvent<HTMLDivElement>,
+    slideIndex: number,
+    blockId: string,
+    x: number,
+    y: number,
+  ) {
+    event.stopPropagation();
+    onSelectSlide(slideIndex);
+    onSelectCanvasItem({ kind: "text-block", slideIndex, id: blockId });
+    event.currentTarget.setPointerCapture(event.pointerId);
+    dragRef.current = {
+      slideIndex,
+      blockId,
+      startX: event.clientX,
+      startY: event.clientY,
+      blockX: x,
+      blockY: y,
+    };
+  }
+
+  function handleMainCopyPointerDown(
+    event: React.PointerEvent<HTMLDivElement>,
+    slideIndex: number,
+    offsetX: number,
+    offsetY: number,
+  ) {
+    event.stopPropagation();
+    onSelectSlide(slideIndex);
+    onSelectCanvasItem({ kind: "main-text", slideIndex });
+    event.currentTarget.setPointerCapture(event.pointerId);
+    copyDragRef.current = {
+      slideIndex,
+      startX: event.clientX,
+      startY: event.clientY,
+      offsetX,
+      offsetY,
+    };
+  }
+
+  function handleMainCopyPointerMove(
+    event: React.PointerEvent<HTMLDivElement>,
+  ) {
+    if (!copyDragRef.current) return;
+    const nextX = Math.round(
+      copyDragRef.current.offsetX + event.clientX - copyDragRef.current.startX,
+    );
+    const nextY = Math.round(
+      copyDragRef.current.offsetY + event.clientY - copyDragRef.current.startY,
+    );
+    onMainTextMove(copyDragRef.current.slideIndex, nextX, nextY);
+  }
+
+  function handleMainCopyPointerUp(
+    event: React.PointerEvent<HTMLDivElement>,
+  ) {
+    if (copyDragRef.current) {
+      event.stopPropagation();
+    }
+    copyDragRef.current = null;
+  }
+
+  function handleTextBlockPointerMove(
+    event: React.PointerEvent<HTMLDivElement>,
+  ) {
+    if (!dragRef.current) return;
+    const nextX = Math.round(
+      dragRef.current.blockX + event.clientX - dragRef.current.startX,
+    );
+    const nextY = Math.round(
+      dragRef.current.blockY + event.clientY - dragRef.current.startY,
+    );
+    onTextBlockMove(
+      dragRef.current.slideIndex,
+      dragRef.current.blockId,
+      nextX,
+      nextY,
+    );
+  }
+
+  function handleTextBlockPointerUp(
+    event: React.PointerEvent<HTMLDivElement>,
+  ) {
+    if (dragRef.current) {
+      event.stopPropagation();
+    }
+    dragRef.current = null;
+  }
+
+  function handlePhonePointerDown(
+    event: React.PointerEvent<HTMLDivElement>,
+    slideIndex: number,
+    offsetX: number,
+    offsetY: number,
+  ) {
+    event.stopPropagation();
+    onSelectSlide(slideIndex);
+    onSelectCanvasItem(null);
+    event.currentTarget.setPointerCapture(event.pointerId);
+    phoneDragRef.current = {
+      slideIndex,
+      startX: event.clientX,
+      startY: event.clientY,
+      offsetX,
+      offsetY,
+    };
+  }
+
+  function handlePhonePointerMove(event: React.PointerEvent<HTMLDivElement>) {
+    if (!phoneDragRef.current) return;
+    const nextX = Math.round(
+      phoneDragRef.current.offsetX + event.clientX - phoneDragRef.current.startX,
+    );
+    const nextY = Math.round(
+      phoneDragRef.current.offsetY + event.clientY - phoneDragRef.current.startY,
+    );
+    onPhoneMove(phoneDragRef.current.slideIndex, nextX, nextY);
+  }
+
+  function handlePhonePointerUp(event: React.PointerEvent<HTMLDivElement>) {
+    if (phoneDragRef.current) {
+      event.stopPropagation();
+    }
+    phoneDragRef.current = null;
+  }
+
+  function handleImagePointerDown(
+    event: React.PointerEvent<HTMLDivElement>,
+    slideIndex: number,
+    blockId: string,
+    x: number,
+    y: number,
+  ) {
+    event.stopPropagation();
+    onSelectSlide(slideIndex);
+    onSelectCanvasItem({ kind: "image-block", slideIndex, id: blockId });
+    event.currentTarget.setPointerCapture(event.pointerId);
+    imageDragRef.current = {
+      slideIndex,
+      blockId,
+      startX: event.clientX,
+      startY: event.clientY,
+      blockX: x,
+      blockY: y,
+    };
+  }
+
+  function handleImagePointerMove(event: React.PointerEvent<HTMLDivElement>) {
+    if (!imageDragRef.current) return;
+    const nextX = Math.round(
+      imageDragRef.current.blockX + event.clientX - imageDragRef.current.startX,
+    );
+    const nextY = Math.round(
+      imageDragRef.current.blockY + event.clientY - imageDragRef.current.startY,
+    );
+    onImageBlockMove(
+      imageDragRef.current.slideIndex,
+      imageDragRef.current.blockId,
+      nextX,
+      nextY,
+    );
+  }
+
+  function handleImagePointerUp(event: React.PointerEvent<HTMLDivElement>) {
+    if (imageDragRef.current) {
+      event.stopPropagation();
+    }
+    imageDragRef.current = null;
+  }
+
+  function handleImageResizePointerDown(
+    event: React.PointerEvent<HTMLDivElement>,
+    slideIndex: number,
+    blockId: string,
+    width: number,
+    aspectRatio: number,
+  ) {
+    event.stopPropagation();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    imageResizeRef.current = {
+      slideIndex,
+      blockId,
+      startX: event.clientX,
+      startWidth: width,
+      aspectRatio,
+    };
+  }
+
+  function handleImageResizePointerMove(
+    event: React.PointerEvent<HTMLDivElement>,
+  ) {
+    if (!imageResizeRef.current) return;
+    const nextWidth = Math.max(
+      24,
+      Math.round(
+        imageResizeRef.current.startWidth +
+          event.clientX -
+          imageResizeRef.current.startX,
+      ),
+    );
+    const nextHeight = Math.max(
+      24,
+      Math.round(nextWidth / imageResizeRef.current.aspectRatio),
+    );
+    onImageBlockResize(
+      imageResizeRef.current.slideIndex,
+      imageResizeRef.current.blockId,
+      nextWidth,
+      nextHeight,
+    );
+  }
+
+  function handleImageResizePointerUp(
+    event: React.PointerEvent<HTMLDivElement>,
+  ) {
+    if (imageResizeRef.current) {
+      event.stopPropagation();
+    }
+    imageResizeRef.current = null;
+  }
 
   return (
     <section
@@ -51,7 +349,7 @@ export function PreviewStage({
           <strong>{draft.projectName}</strong>
           <span>{slides.length} slide{slides.length !== 1 ? "s" : ""}</span>
         </div>
-        <p>Click any slide to open canvas editor.</p>
+        <p>Click a slide to select it, then drag text directly on the canvas.</p>
       </div>
 
       <div className={styles.canvas}>
@@ -67,7 +365,10 @@ export function PreviewStage({
                 type="button"
                 className={styles.slideCard}
                 data-active={index === selectedSlideIndex}
-                onClick={() => onSelectSlide(index)}
+                onClick={() => {
+                  onSelectSlide(index);
+                  onSelectCanvasItem(null);
+                }}
                 style={{
                   color: theme.slideText,
                   fontFamily,
@@ -115,21 +416,39 @@ export function PreviewStage({
                   />
                 ))}
 
-                <div className={styles.cardHeader}>
-                  <span
-                    className={styles.badge}
-                    style={{
-                      color: theme.slideText,
-                      borderColor: `${theme.accent}44`,
-                      background: `${theme.accent}1a`,
-                    }}
-                  >
-                    {slide.badge}
-                  </span>
-                </div>
+                {slide.badge.trim() ? (
+                  <div className={styles.cardHeader}>
+                    <span
+                      className={styles.badge}
+                      style={{
+                        color: theme.slideText,
+                        borderColor: `${theme.accent}44`,
+                        background: `${theme.accent}1a`,
+                      }}
+                    >
+                      {slide.badge}
+                    </span>
+                  </div>
+                ) : null}
 
                 <div
                   className={styles.copy}
+                  data-draggable={index === selectedSlideIndex}
+                  data-selected={
+                    selectedCanvasItem?.kind === "main-text" &&
+                    selectedCanvasItem.slideIndex === index
+                  }
+                  onPointerDown={(event) =>
+                    handleMainCopyPointerDown(
+                      event,
+                      index,
+                      slide.textOffsetX,
+                      slide.textOffsetY,
+                    )
+                  }
+                  onPointerMove={handleMainCopyPointerMove}
+                  onPointerUp={handleMainCopyPointerUp}
+                  onPointerCancel={handleMainCopyPointerUp}
                   style={{
                     transform: `translate(${slide.textOffsetX}px, ${slide.textOffsetY}px)`,
                   }}
@@ -138,8 +457,106 @@ export function PreviewStage({
                   <p style={{ color: theme.slideMuted }}>{slide.subtitle}</p>
                 </div>
 
+                {slide.extraTextBlocks.map((block) => (
+                  <div
+                    key={block.id}
+                    className={styles.floatingText}
+                    data-draggable={index === selectedSlideIndex}
+                    data-selected={
+                      selectedCanvasItem?.kind === "text-block" &&
+                      selectedCanvasItem.slideIndex === index &&
+                      selectedCanvasItem.id === block.id
+                    }
+                    onPointerDown={(event) =>
+                      handleTextBlockPointerDown(
+                        event,
+                        index,
+                        block.id,
+                        block.x,
+                        block.y,
+                      )
+                    }
+                    onPointerMove={handleTextBlockPointerMove}
+                    onPointerUp={handleTextBlockPointerUp}
+                    onPointerCancel={handleTextBlockPointerUp}
+                    style={{
+                      width: block.width,
+                      transform: `translate(${block.x}px, ${block.y}px)`,
+                      fontSize: block.size,
+                      fontWeight: block.weight,
+                      fontFamily: getFontFamily(block.font),
+                    }}
+                  >
+                    {block.text}
+                  </div>
+                ))}
+
+                {slide.imageBlocks.map((block) => (
+                  <div
+                    key={block.id}
+                    className={styles.imageBlock}
+                    data-draggable={index === selectedSlideIndex}
+                    data-selected={
+                      selectedCanvasItem?.kind === "image-block" &&
+                      selectedCanvasItem.slideIndex === index &&
+                      selectedCanvasItem.id === block.id
+                    }
+                    onPointerDown={(event) =>
+                      handleImagePointerDown(
+                        event,
+                        index,
+                        block.id,
+                        block.x,
+                        block.y,
+                      )
+                    }
+                    onPointerMove={handleImagePointerMove}
+                    onPointerUp={handleImagePointerUp}
+                    onPointerCancel={handleImagePointerUp}
+                    style={{
+                      width: block.width,
+                      height: block.height,
+                      transform: `translate(${block.x}px, ${block.y}px)`,
+                    }}
+                  >
+                    <img
+                      src={block.url}
+                      alt={block.name}
+                      className={styles.imageBlockAsset}
+                      draggable={false}
+                    />
+                    <div
+                      className={styles.resizeHandle}
+                      onPointerDown={(event) =>
+                        handleImageResizePointerDown(
+                          event,
+                          index,
+                          block.id,
+                          block.width,
+                          block.aspectRatio,
+                        )
+                      }
+                      onPointerMove={handleImageResizePointerMove}
+                      onPointerUp={handleImageResizePointerUp}
+                      onPointerCancel={handleImageResizePointerUp}
+                    />
+                  </div>
+                ))}
+
                 <div
                   className={styles.deviceWrap}
+                  data-draggable={index === selectedSlideIndex}
+                  onPointerDown={(event) =>
+                    handlePhonePointerDown(
+                      event,
+                      index,
+                      slide.phoneOffsetX,
+                      slide.phoneOffsetY,
+                    )
+                  }
+                  onPointerMove={handlePhonePointerMove}
+                  onPointerUp={handlePhonePointerUp}
+                  onPointerCancel={handlePhonePointerUp}
                   style={{
                     transform: `translate(${slide.phoneOffsetX}px, ${slide.phoneOffsetY}px)`,
                   }}
@@ -152,15 +569,6 @@ export function PreviewStage({
                     phoneTilt={draft.phoneTilt}
                     phoneScale={draft.phoneScale}
                   />
-                </div>
-
-                {/* Canvas mode indicator */}
-                <div className={styles.canvasHint} data-no-export="true">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                  </svg>
-                  Edit
                 </div>
               </button>
             ))}

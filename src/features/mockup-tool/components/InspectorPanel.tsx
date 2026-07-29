@@ -4,6 +4,7 @@ import { TextPanel } from "@/features/mockup-tool/components/text-panel/TextPane
 import { StylePanel } from "@/features/mockup-tool/components/style-panel/StylePanel";
 import { ExportPanel } from "@/features/mockup-tool/components/export-panel/ExportPanel";
 import type {
+  CanvasSelection,
   CustomThemeSettings,
   EditorDraft,
   MockupTheme,
@@ -24,6 +25,7 @@ type InspectorPanelProps = {
   screenshotLibrary: ScreenshotAsset[];
   slideScreenshotAssetIds: Array<string | null>;
   screenshotNames: Array<string | null>;
+  selectedCanvasItem: CanvasSelection | null;
   customBackgroundName: string | null;
   customThemeSettings: CustomThemeSettings;
   onThemeSelect: (themeId: string) => void;
@@ -49,6 +51,9 @@ type InspectorPanelProps = {
   onRemoveScreenshotAsset: (assetId: string) => void;
   onSlideScreenshotChange: (index: number, file: File | null) => void;
   onScreenshotLibraryUpload: (files: FileList | null) => void;
+  onAddSlideImageBlock: (index: number, file: File | null) => void;
+  onRemoveSlideImageBlock: (index: number, blockId: string) => void;
+  onDeleteSelectedCanvasItem: () => void;
   onResetTheme: () => void;
   onExport: () => void;
   onAddSlide: () => void;
@@ -69,6 +74,7 @@ export function InspectorPanel({
   screenshotLibrary,
   slideScreenshotAssetIds,
   screenshotNames,
+  selectedCanvasItem,
   customBackgroundName,
   customThemeSettings,
   onThemeSelect,
@@ -84,6 +90,9 @@ export function InspectorPanel({
   onRemoveScreenshotAsset,
   onSlideScreenshotChange,
   onScreenshotLibraryUpload,
+  onAddSlideImageBlock,
+  onRemoveSlideImageBlock,
+  onDeleteSelectedCanvasItem,
   onResetTheme,
   onExport,
   onAddSlide,
@@ -151,6 +160,10 @@ export function InspectorPanel({
             selectedSlideIndex={selectedSlideIndex}
             onDraftChange={onDraftChange}
             onSlideChange={onSlideChange}
+            onAddImageBlock={onAddSlideImageBlock}
+            onRemoveImageBlock={onRemoveSlideImageBlock}
+            selectedCanvasItem={selectedCanvasItem}
+            onDeleteSelectedCanvasItem={onDeleteSelectedCanvasItem}
           />
         </section>
       ) : null}
@@ -193,8 +206,8 @@ function getTabDescription(tab: ToolTab) {
   switch (tab) {
     case "theme":  return "Choose the visual direction.";
     case "slides": return "Upload screenshots and manage slides.";
-    case "text":   return "Edit the selected slide copy.";
-    case "style":  return "Font, device, and layout controls.";
+    case "text":   return "Edit content and manage draggable canvas items.";
+    case "style":  return "Device and layout controls.";
     case "export": return "Download your mockup assets.";
   }
 }

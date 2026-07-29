@@ -135,7 +135,9 @@
 /* ─── Card layers ────────────────────────────────────────────────── */
 .cardHeader,
 .copy,
-.deviceWrap {
+.deviceWrap,
+.floatingText,
+.imageBlock {
   position: relative;
   z-index: 1;
 }
@@ -158,6 +160,23 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+
+.copy[data-draggable="true"] {
+  outline: 1px dashed rgba(124, 108, 255, 0.28);
+  outline-offset: 10px;
+}
+
+.copy[data-selected="true"] {
+  outline: 2px solid rgba(124, 108, 255, 0.72);
+  outline-offset: 10px;
+}
+
+.copy:active {
+  cursor: grabbing;
 }
 
 .copy h3 {
@@ -173,6 +192,80 @@
   opacity: 0.8;
 }
 
+.floatingText {
+  position: absolute;
+  left: 20px;
+  top: 124px;
+  max-width: calc(100% - 40px);
+  white-space: pre-wrap;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  pointer-events: auto;
+  user-select: none;
+  cursor: grab;
+  touch-action: none;
+}
+
+.floatingText[data-draggable="true"] {
+  outline: 1px dashed rgba(124, 108, 255, 0.35);
+  outline-offset: 6px;
+}
+
+.floatingText[data-selected="true"] {
+  outline: 2px solid rgba(124, 108, 255, 0.78);
+  outline-offset: 6px;
+}
+
+.floatingText:active {
+  cursor: grabbing;
+}
+
+.imageBlock {
+  position: absolute;
+  left: 20px;
+  top: 124px;
+  pointer-events: auto;
+  user-select: none;
+  cursor: grab;
+  touch-action: none;
+}
+
+.imageBlock[data-draggable="true"] {
+  outline: 1px dashed rgba(124, 108, 255, 0.35);
+  outline-offset: 6px;
+}
+
+.imageBlock[data-selected="true"] {
+  outline: 2px solid rgba(124, 108, 255, 0.82);
+  outline-offset: 6px;
+}
+
+.imageBlock:active {
+  cursor: grabbing;
+}
+
+.imageBlockAsset {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.resizeHandle {
+  position: absolute;
+  right: -8px;
+  bottom: -8px;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  background: rgba(124, 108, 255, 0.95);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.28);
+  cursor: nwse-resize;
+  touch-action: none;
+}
+
 /* ─── Device wrap ────────────────────────────────────────────────── */
 .deviceWrap {
   display: flex;
@@ -181,31 +274,21 @@
   margin-top: auto;
   padding-top: 6px;
   flex: 1;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+
+.deviceWrap[data-draggable="true"] {
+  outline: 1px dashed rgba(124, 108, 255, 0.28);
+  outline-offset: 10px;
+}
+
+.deviceWrap:active {
+  cursor: grabbing;
 }
 
 /* ─── Canvas hint overlay ────────────────────────────────────────── */
-.canvasHint {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  background: rgba(124, 108, 255, 0.0);
-  color: transparent;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  border-radius: 24px;
-  transition: background var(--t-mid), color var(--t-mid);
-  z-index: 2;
-}
-
-.slideCard:hover .canvasHint {
-  background: rgba(0, 0, 0, 0.55);
-  color: rgba(255, 255, 255, 0.9);
-}
-
 /* ─── Responsive ─────────────────────────────────────────────────── */
 @media (max-width: 1180px) {
   .workspaceTop {

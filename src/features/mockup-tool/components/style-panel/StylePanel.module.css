@@ -69,6 +69,54 @@
   gap: 10px;
 }
 
+.orientationGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.orientationLabel {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-soft);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.orientationButtons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.orientationButton {
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  color: var(--text-soft);
+  font-size: 0.8rem;
+  font-weight: 700;
+  transition:
+    border-color var(--t-fast),
+    background var(--t-fast),
+    box-shadow var(--t-fast),
+    color var(--t-fast);
+}
+
+.orientationButton:hover {
+  border-color: var(--border-default);
+  background: var(--bg-glass-hover);
+  color: var(--text-primary);
+}
+
+.orientationButton[data-active="true"] {
+  border-color: var(--border-accent);
+  background: rgba(124, 108, 255, 0.1);
+  box-shadow: 0 0 0 1px rgba(124, 108, 255, 0.2);
+  color: var(--accent-bright);
+}
+
 .rangeHeader {
   display: flex;
   align-items: center;
@@ -152,6 +200,10 @@
 
 @media (max-width: 520px) {
   .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .orientationButtons {
     grid-template-columns: 1fr;
   }
 }

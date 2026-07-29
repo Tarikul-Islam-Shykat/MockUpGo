@@ -249,19 +249,67 @@ export function AnimatedPreview({
         }
 
         const slide = slides[i];
+        const imageBlockMarkup = slide.imageBlocks
+          .map(
+            (block) => `
+              <div style="
+                position:absolute;
+                left:20px;
+                top:124px;
+                width:${block.width}px;
+                height:${block.height}px;
+                transform:translate(${block.x}px, ${block.y}px);
+              ">
+                <img
+                  src="${block.url}"
+                  style="width:100%;height:100%;display:block;object-fit:contain;"
+                />
+              </div>
+            `,
+          )
+          .join("");
+        const extraTextMarkup = slide.extraTextBlocks
+          .map(
+            (block) => `
+              <div style="
+                position:absolute;
+                left:20px;
+                top:124px;
+                width:${block.width}px;
+                max-width:calc(100% - 40px);
+                transform:translate(${block.x}px, ${block.y}px);
+                font-size:${block.size}px;
+                font-weight:${block.weight};
+                font-family:${getFontFamily(block.font)};
+                line-height:1.15;
+                letter-spacing:-0.03em;
+                white-space:pre-wrap;
+                color:${theme.slideText};
+              ">
+                ${block.text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
+              </div>
+            `,
+          )
+          .join("");
         content.innerHTML = `
-          <div style="display:inline-flex;align-items:center;padding:6px 14px;border-radius:999px;border:1px solid ${theme.accent}55;background:${theme.accent}20;font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;width:fit-content;color:${theme.slideText}">
-            ${slide.badge}
-          </div>
-          <h3 style="font-size:2.4rem;line-height:1.0;letter-spacing:-0.05em;font-weight:900;margin:0;color:${theme.slideText}">
+          ${
+            slide.badge.trim()
+              ? `<div style="display:inline-flex;align-items:center;padding:6px 14px;border-radius:999px;border:1px solid ${theme.accent}55;background:${theme.accent}20;font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;width:fit-content;color:${theme.slideText}">
+                   ${slide.badge}
+                 </div>`
+              : ""
+          }
+          <h3 style="font-size:2.4rem;line-height:1.0;letter-spacing:-0.05em;font-weight:900;margin:0;color:${theme.slideText};transform:translate(${slide.textOffsetX}px, ${slide.textOffsetY}px);transform-origin:top left;">
             ${slide.title}
           </h3>
-          <p style="font-size:0.95rem;line-height:1.55;margin:0;color:${theme.slideMuted}">
+          <p style="font-size:0.95rem;line-height:1.55;margin:0;color:${theme.slideMuted};transform:translate(${slide.textOffsetX}px, ${slide.textOffsetY}px);transform-origin:top left;">
             ${slide.subtitle}
           </p>
+          ${imageBlockMarkup}
+          ${extraTextMarkup}
           ${
             screenshotUrls[i]
-              ? `<div style="margin-top:auto;display:flex;justify-content:center;">
+              ? `<div style="margin-top:auto;display:flex;justify-content:center;transform:translate(${slide.phoneOffsetX}px, ${slide.phoneOffsetY}px);">
                    <img src="${screenshotUrls[i]}" style="width:170px;height:310px;object-fit:cover;border-radius:28px;border:3px solid rgba(255,255,255,0.1);" />
                  </div>`
               : ""
@@ -493,22 +541,27 @@ export function AnimatedPreview({
 
             <div className={styles.content}>
               {/* Badge */}
-              <span
-                className={styles.badge}
-                data-anim={slideState === "entering" || slideState === "visible" ? "true" : "false"}
-                style={{
-                  color: theme.slideText,
-                  borderColor: `${theme.accent}55`,
-                  background: `${theme.accent}20`,
-                }}
-              >
-                {slide.badge}
-              </span>
+              {slide.badge.trim() ? (
+                <span
+                  className={styles.badge}
+                  data-anim={slideState === "entering" || slideState === "visible" ? "true" : "false"}
+                  style={{
+                    color: theme.slideText,
+                    borderColor: `${theme.accent}55`,
+                    background: `${theme.accent}20`,
+                  }}
+                >
+                  {slide.badge}
+                </span>
+              ) : null}
 
               {/* Headline */}
               <h3
                 className={styles.headline}
                 data-anim={slideState === "entering" || slideState === "visible" ? "true" : "false"}
+                style={{
+                  transform: `translate(${slide.textOffsetX}px, ${slide.textOffsetY}px)`,
+                }}
               >
                 {slide.title}
               </h3>
@@ -517,15 +570,58 @@ export function AnimatedPreview({
               <p
                 className={styles.subtitle}
                 data-anim={slideState === "entering" || slideState === "visible" ? "true" : "false"}
-                style={{ color: theme.slideMuted }}
+                style={{
+                  color: theme.slideMuted,
+                  transform: `translate(${slide.textOffsetX}px, ${slide.textOffsetY}px)`,
+                }}
               >
                 {slide.subtitle}
               </p>
+
+              {slide.imageBlocks.map((block) => (
+                <div
+                  key={block.id}
+                  className={styles.imageBlock}
+                  data-anim={slideState === "entering" || slideState === "visible" ? "true" : "false"}
+                  style={{
+                    width: block.width,
+                    height: block.height,
+                    transform: `translate(${block.x}px, ${block.y}px)`,
+                  }}
+                >
+                  <img
+                    src={block.url}
+                    alt={block.name}
+                    className={styles.imageBlockAsset}
+                    draggable={false}
+                  />
+                </div>
+              ))}
+
+              {slide.extraTextBlocks.map((block) => (
+                <div
+                  key={block.id}
+                  className={styles.floatingText}
+                  data-anim={slideState === "entering" || slideState === "visible" ? "true" : "false"}
+                  style={{
+                    width: block.width,
+                    transform: `translate(${block.x}px, ${block.y}px)`,
+                    fontSize: block.size,
+                    fontWeight: block.weight,
+                    fontFamily: getFontFamily(block.font),
+                  }}
+                >
+                  {block.text}
+                </div>
+              ))}
 
               {/* Phone */}
               <div
                 className={styles.phoneWrap}
                 data-anim={slideState === "entering" || slideState === "visible" ? "true" : "false"}
+                style={{
+                  transform: `translate(${slide.phoneOffsetX}px, ${slide.phoneOffsetY}px)`,
+                }}
               >
                 <PhoneMockup
                   screenshotUrl={screenshotUrls[currentIndex]}

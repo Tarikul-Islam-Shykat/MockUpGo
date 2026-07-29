@@ -9,6 +9,8 @@ function makeSlides(
     subtitle,
     badge,
     framePreset: "svg-classic",
+    extraTextBlocks: [],
+    imageBlocks: [],
     textOffsetX: 0,
     textOffsetY: 0,
     phoneOffsetX: 0,
@@ -454,7 +456,11 @@ export function createDraftFromTheme(theme: MockupTheme): EditorDraft {
 }
 
 export function createSlidesFromTheme(theme: MockupTheme): SlideDraft[] {
-  return theme.starterSlides.map((slide) => ({ ...slide }));
+  return theme.starterSlides.map((slide) => ({
+    ...slide,
+    extraTextBlocks: slide.extraTextBlocks.map((block) => ({ ...block })),
+    imageBlocks: slide.imageBlocks.map((block) => ({ ...block })),
+  }));
 }
 
 export function createBlankSlide(index: number): SlideDraft {
@@ -464,6 +470,8 @@ export function createBlankSlide(index: number): SlideDraft {
     subtitle: "Tap to add your screenshot and edit this text",
     badge: "Screen",
     framePreset: "svg-classic",
+    extraTextBlocks: [],
+    imageBlocks: [],
     textOffsetX: 0,
     textOffsetY: 0,
     phoneOffsetX: 0,

@@ -1,8 +1,6 @@
-import { fontOptions } from "@/features/mockup-tool/data/fonts";
 import type {
   DeviceFinish,
   EditorDraft,
-  FontOption,
   ScreenshotFit,
 } from "@/features/mockup-tool/types";
 
@@ -30,25 +28,6 @@ const fitOptions: Array<{ value: ScreenshotFit; label: string }> = [
 export function StylePanel({ draft, onDraftChange }: StylePanelProps) {
   return (
     <div className={styles.panel}>
-      <div className={styles.fieldGroupLabel}>Typography</div>
-      <div className={styles.fontGrid}>
-        {fontOptions.map((font) => (
-          <button
-            key={font.id}
-            type="button"
-            className={styles.fontCard}
-            data-active={draft.font === font.id}
-            onClick={() => onDraftChange("font", font.id as FontOption)}
-            style={{ fontFamily: font.family }}
-          >
-            <span className={styles.fontPreview}>Ag</span>
-            <b>{font.name}</b>
-          </button>
-        ))}
-      </div>
-
-      <div className={styles.divider} />
-
       <div className={styles.fieldGroupLabel}>Device</div>
       <div className={styles.grid}>
         <label className={styles.field}>
@@ -94,6 +73,36 @@ export function StylePanel({ draft, onDraftChange }: StylePanelProps) {
 
       <div className={styles.fieldGroupLabel}>Layout</div>
 
+      <div className={styles.orientationGroup}>
+        <span className={styles.orientationLabel}>Orientation</span>
+        <div className={styles.orientationButtons}>
+          <button
+            type="button"
+            className={styles.orientationButton}
+            data-active={draft.phoneTilt === 0}
+            onClick={() => onDraftChange("phoneTilt", 0)}
+          >
+            Portrait
+          </button>
+          <button
+            type="button"
+            className={styles.orientationButton}
+            data-active={draft.phoneTilt === 90}
+            onClick={() => onDraftChange("phoneTilt", 90)}
+          >
+            Landscape
+          </button>
+          <button
+            type="button"
+            className={styles.orientationButton}
+            data-active={draft.phoneTilt === -90}
+            onClick={() => onDraftChange("phoneTilt", -90)}
+          >
+            Reverse
+          </button>
+        </div>
+      </div>
+
       <label className={styles.field}>
         <div className={styles.rangeHeader}>
           <span>Phone size</span>
@@ -113,13 +122,13 @@ export function StylePanel({ draft, onDraftChange }: StylePanelProps) {
 
       <label className={styles.field}>
         <div className={styles.rangeHeader}>
-          <span>Phone angle</span>
+          <span>Phone rotation</span>
           <b>{draft.phoneTilt}°</b>
         </div>
         <input
           type="range"
-          min={-10}
-          max={10}
+          min={-90}
+          max={90}
           step={1}
           value={draft.phoneTilt}
           onChange={(event) =>
