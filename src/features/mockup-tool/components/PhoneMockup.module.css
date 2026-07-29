@@ -10,8 +10,8 @@
 /* ─── SVG phone shell (new default renderer) ──────────────────────── */
 .svgShell {
   /* 320:660 = ~0.485 aspect ratio */
-  width: 220px;
-  height: 454px;
+  width: 236px;
+  height: 487px;
   transform-origin: bottom center;
   transition: transform var(--t-mid);
   flex-shrink: 0;
