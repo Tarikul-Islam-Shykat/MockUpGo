@@ -50,13 +50,56 @@
   display: inline-flex;
   align-items: center;
   flex-wrap: nowrap;
-  gap: 8px;
+  gap: 12px;
   padding: 6px;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(8, 11, 18, 0.72);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
   white-space: nowrap;
+}
+
+.zoomSlider {
+  width: clamp(160px, 22vw, 340px);
+  height: 4px;
+  border-radius: 999px;
+  appearance: none;
+  background: linear-gradient(90deg, rgba(124, 108, 255, 0.9), rgba(111, 195, 255, 0.7));
+  outline: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.zoomSlider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.zoomSlider::-webkit-slider-thumb {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  margin-top: -7px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: #fff;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.28);
+}
+
+.zoomSlider::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.zoomSlider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: #fff;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.28);
 }
 
 .zoomControls button {
@@ -92,8 +135,17 @@
 }
 
 .zoomReadout {
-  min-width: 60px !important;
+  min-width: 60px;
+  height: 30px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
   background: linear-gradient(135deg, rgba(124, 108, 255, 0.4), rgba(111, 195, 255, 0.28)) !important;
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
 }
 
 .fitButton {

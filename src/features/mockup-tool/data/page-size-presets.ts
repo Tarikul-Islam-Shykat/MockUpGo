@@ -35,15 +35,15 @@ export function getPageSizeDimensions(
 
   if (presetId === "landscape-16-9") {
     return {
-      width: 1920,
-      height: 1080,
+      width: baseLongSide,
+      height: Math.max(24, Math.round(baseLongSide / preset.ratio)),
     };
   }
 
   if (presetId === "portrait-9-16") {
     return {
-      width: 1080,
-      height: 1920,
+      width: Math.max(24, Math.round(baseLongSide * preset.ratio)),
+      height: baseLongSide,
     };
   }
 

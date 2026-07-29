@@ -188,15 +188,7 @@ export function PreviewStage({
   }, [trackHeight, trackWidth]);
 
   function clampZoom(value: number) {
-    return Math.max(5, Math.min(160, Math.round(value)));
-  }
-
-  function handleZoomOut() {
-    setZoom((current) => clampZoom(current - 10));
-  }
-
-  function handleZoomIn() {
-    setZoom((current) => clampZoom(current + 10));
+    return Math.max(5, Math.min(300, Math.round(value)));
   }
 
   function handleFitZoom() {
@@ -520,15 +512,17 @@ export function PreviewStage({
           <span>{slides.length} slide{slides.length !== 1 ? "s" : ""}</span>
         </div>
         <div className={styles.zoomControls}>
-          <button type="button" onClick={handleZoomOut} aria-label="Zoom out">
-            -
-          </button>
-          <button type="button" className={styles.zoomReadout} onClick={handleFitZoom}>
-            {zoom}%
-          </button>
-          <button type="button" onClick={handleZoomIn} aria-label="Zoom in">
-            +
-          </button>
+          <input
+            className={styles.zoomSlider}
+            type="range"
+            min={5}
+            max={300}
+            step={1}
+            value={zoom}
+            aria-label="Zoom level"
+            onChange={(event) => setZoom(clampZoom(Number(event.target.value)))}
+          />
+          <div className={styles.zoomReadout}>{zoom}%</div>
           <button type="button" className={styles.fitButton} onClick={handleFitZoom}>
             Fit
           </button>
