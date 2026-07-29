@@ -1,12 +1,12 @@
-import { TemplateRail } from "@/features/mockup-tool/components/TemplateRail";
-import { fontOptions } from "@/features/mockup-tool/data/fonts";
+import { ThemePanel } from "@/features/mockup-tool/components/theme-panel/ThemePanel";
+import { SlidePanel } from "@/features/mockup-tool/components/slide-panel/SlidePanel";
+import { TextPanel } from "@/features/mockup-tool/components/text-panel/TextPanel";
+import { StylePanel } from "@/features/mockup-tool/components/style-panel/StylePanel";
+import { ExportPanel } from "@/features/mockup-tool/components/export-panel/ExportPanel";
 import type {
-  DeviceFinish,
   EditorDraft,
-  FontOption,
   MockupTheme,
   ScreenshotAsset,
-  ScreenshotFit,
   SlideDraft,
   ToolTab,
 } from "@/features/mockup-tool/types";
@@ -48,17 +48,6 @@ type InspectorPanelProps = {
   onExportZip?: () => void;
 };
 
-const deviceFinishOptions: Array<{ value: DeviceFinish; label: string }> = [
-  { value: "obsidian",   label: "Obsidian" },
-  { value: "silver",     label: "Silver" },
-  { value: "champagne",  label: "Champagne" },
-];
-
-const fitOptions: Array<{ value: ScreenshotFit; label: string }> = [
-  { value: "cover",   label: "Cover (fill)" },
-  { value: "contain", label: "Contain (fit)" },
-];
-
 export function InspectorPanel({
   activeTab,
   draft,
@@ -86,17 +75,6 @@ export function InspectorPanel({
   zipProgress = 0,
   onExportZip,
 }: InspectorPanelProps) {
-  const selectedSlide = slides[selectedSlideIndex];
-  const selectedScreenshotName = screenshotNames[selectedSlideIndex];
-  const selectedSlideScreenshotId = slideScreenshotAssetIds[selectedSlideIndex];
-
-  function getAssignedSlides(assetId: string) {
-    return slideScreenshotAssetIds.reduce<number[]>((list, assignedAssetId, index) => {
-      if (assignedAssetId === assetId) list.push(index + 1);
-      return list;
-    }, []);
-  }
-
   return (
     <aside className={styles.panel}>
       <div className={styles.header}>
@@ -108,399 +86,67 @@ export function InspectorPanel({
       {/* ── THEME TAB ──────────────────────────────────────────────── */}
       {activeTab === "theme" ? (
         <section className={styles.section}>
-          <TemplateRail
-            templates={themes}
-            selectedTemplateId={draft.themeId}
-            onSelect={onThemeSelect}
+          <ThemePanel
+            themes={themes}
+            selectedThemeId={draft.themeId}
+            onThemeSelect={onThemeSelect}
+            onResetTheme={onResetTheme}
           />
-          <button
-            type="button"
-            className={styles.secondaryButton}
-            onClick={onResetTheme}
-          >
-            Reset theme defaults
-          </button>
         </section>
       ) : null}
 
       {/* ── SLIDES TAB ─────────────────────────────────────────────── */}
       {activeTab === "slides" ? (
         <section className={styles.section}>
-          {/* Batch upload */}
-          <label className={styles.uploadCard}>
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              className={styles.hiddenInput}
-              onChange={(event) => onScreenshotLibraryUpload(event.target.files)}
-            />
-            <strong>Upload screenshot library</strong>
-            <span>
-              Select several app screens at once. They will be added below and
-              auto-filled from slide {selectedSlideIndex + 1}.
-            </span>
-          </label>
-
-          {/* Slide list */}
-          <div className={styles.slideListHeader}>
-            <span>Slides ({slides.length}/{maxSlides})</span>
-            {slides.length < maxSlides && (
-              <button
-                type="button"
-                className={styles.addSlideBtn}
-                onClick={onAddSlide}
-              >
-                + Add slide
-              </button>
-            )}
-          </div>
-
-          <div className={styles.slideList}>
-            {slides.map((slide, index) => (
-              <div key={slide.id} className={styles.slideRowWrap}>
-                <button
-                  type="button"
-                  className={styles.slideRow}
-                  data-active={index === selectedSlideIndex}
-                  onClick={() => onSelectedSlideChange(index)}
-                >
-                  <span>{index + 1}</span>
-                  <div>
-                    <strong>{slide.title}</strong>
-                    <small>{screenshotNames[index] ?? "No screenshot"}</small>
-                  </div>
-                </button>
-                {slides.length > 1 && (
-                  <button
-                    type="button"
-                    className={styles.removeSlideBtn}
-                    onClick={() => onRemoveSlide(index)}
-                    title="Remove slide"
-                  >
-                    ×
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-
-          <div className={styles.divider} />
-          <div className={styles.fieldGroupLabel}>Screenshot library</div>
-
-          <div className={styles.selectionCard}>
-            <strong>Selected slide: {selectedSlideIndex + 1}</strong>
-            <span>
-              {selectedScreenshotName
-                ? `Using ${selectedScreenshotName}`
-                : "Choose any uploaded screen below to place it in the phone."}
-            </span>
-          </div>
-
-          {screenshotLibrary.length > 0 ? (
-            <div className={styles.assetGrid}>
-              {screenshotLibrary.map((asset) => {
-                const assignedSlides = getAssignedSlides(asset.id);
-                const isActive = asset.id === selectedSlideScreenshotId;
-
-                return (
-                  <button
-                    key={asset.id}
-                    type="button"
-                    className={styles.assetCard}
-                    data-active={isActive}
-                    onClick={() =>
-                      onAssignScreenshotToSlide(selectedSlideIndex, asset.id)
-                    }
-                  >
-                    <img
-                      src={asset.url}
-                      alt={asset.name}
-                      className={styles.assetThumb}
-                    />
-                    <div className={styles.assetCopy}>
-                      <strong>{asset.name}</strong>
-                      <span>
-                        {assignedSlides.length > 0
-                          ? `Used on slide ${assignedSlides.join(", ")}`
-                          : "Not assigned yet"}
-                      </span>
-                    </div>
-                    <div className={styles.assetActions}>
-                      {isActive ? (
-                        <span className={styles.assetBadge}>Selected</span>
-                      ) : null}
-                      <span
-                        role="button"
-                        tabIndex={-1}
-                        className={styles.assetRemove}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          onRemoveScreenshotAsset(asset.id);
-                        }}
-                      >
-                        Remove
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          ) : (
-            <div className={styles.emptyState}>
-              <strong>No screenshots uploaded yet</strong>
-              <span>
-                Add multiple app screens once, then click one to assign it to
-                the selected slide.
-              </span>
-            </div>
-          )}
-
-          {/* Single screenshot upload for selected slide */}
-          <label className={styles.uploadCard}>
-            <input
-              type="file"
-              accept="image/*"
-              className={styles.hiddenInput}
-              onChange={(event) =>
-                onSlideScreenshotChange(
-                  selectedSlideIndex,
-                  event.target.files?.[0] ?? null,
-                )
-              }
-            />
-            <strong>
-              {selectedScreenshotName
-                ? `Quick replace slide ${selectedSlideIndex + 1}`
-                : `Upload one screenshot for slide ${selectedSlideIndex + 1}`}
-            </strong>
-            <span>
-              {selectedScreenshotName ?? "PNG or JPG. This also adds it to the library."}
-            </span>
-          </label>
-
-          {selectedSlideScreenshotId ? (
-            <button
-              type="button"
-              className={styles.secondaryButton}
-              onClick={() => onAssignScreenshotToSlide(selectedSlideIndex, null)}
-            >
-              Clear selected slide screenshot
-            </button>
-          ) : null}
+          <SlidePanel
+            slides={slides}
+            selectedSlideIndex={selectedSlideIndex}
+            maxSlides={maxSlides}
+            screenshotLibrary={screenshotLibrary}
+            slideScreenshotAssetIds={slideScreenshotAssetIds}
+            screenshotNames={screenshotNames}
+            onSelectedSlideChange={onSelectedSlideChange}
+            onAssignScreenshotToSlide={onAssignScreenshotToSlide}
+            onRemoveScreenshotAsset={onRemoveScreenshotAsset}
+            onSlideScreenshotChange={onSlideScreenshotChange}
+            onScreenshotLibraryUpload={onScreenshotLibraryUpload}
+            onAddSlide={onAddSlide}
+            onRemoveSlide={onRemoveSlide}
+          />
         </section>
       ) : null}
 
       {/* ── TEXT TAB ───────────────────────────────────────────────── */}
       {activeTab === "text" ? (
         <section className={styles.section}>
-          <label className={styles.field}>
-            <span>Project name</span>
-            <input
-              value={draft.projectName}
-              onChange={(event) =>
-                onDraftChange("projectName", event.target.value)
-              }
-            />
-          </label>
-
-          <div className={styles.fieldGroupLabel}>Slide {selectedSlideIndex + 1} content</div>
-
-          <label className={styles.field}>
-            <span>Badge label</span>
-            <input
-              value={selectedSlide.badge}
-              onChange={(event) =>
-                onSlideChange(selectedSlideIndex, "badge", event.target.value)
-              }
-            />
-          </label>
-
-          <label className={styles.field}>
-            <span>Headline</span>
-            <textarea
-              rows={4}
-              value={selectedSlide.title}
-              onChange={(event) =>
-                onSlideChange(selectedSlideIndex, "title", event.target.value)
-              }
-            />
-          </label>
-
-          <label className={styles.field}>
-            <span>Support text</span>
-            <textarea
-              rows={3}
-              value={selectedSlide.subtitle}
-              onChange={(event) =>
-                onSlideChange(selectedSlideIndex, "subtitle", event.target.value)
-              }
-            />
-          </label>
+          <TextPanel
+            draft={draft}
+            slide={slides[selectedSlideIndex]}
+            selectedSlideIndex={selectedSlideIndex}
+            onDraftChange={onDraftChange}
+            onSlideChange={onSlideChange}
+          />
         </section>
       ) : null}
 
       {/* ── STYLE TAB ──────────────────────────────────────────────── */}
       {activeTab === "style" ? (
         <section className={styles.section}>
-          {/* Font picker */}
-          <div className={styles.fieldGroupLabel}>Typography</div>
-          <div className={styles.fontGrid}>
-            {fontOptions.map((font) => (
-              <button
-                key={font.id}
-                type="button"
-                className={styles.fontCard}
-                data-active={draft.font === font.id}
-                onClick={() => onDraftChange("font", font.id as FontOption)}
-                style={{ fontFamily: font.family }}
-              >
-                <span className={styles.fontPreview}>Ag</span>
-                <b>{font.name}</b>
-              </button>
-            ))}
-          </div>
-
-          <div className={styles.divider} />
-
-          <div className={styles.fieldGroupLabel}>Device</div>
-          <div className={styles.grid}>
-            <label className={styles.field}>
-              <span>Finish</span>
-              <select
-                value={draft.deviceFinish}
-                onChange={(event) =>
-                  onDraftChange(
-                    "deviceFinish",
-                    event.target.value as DeviceFinish,
-                  )
-                }
-              >
-                {deviceFinishOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className={styles.field}>
-              <span>Screenshot fit</span>
-              <select
-                value={draft.screenshotFit}
-                onChange={(event) =>
-                  onDraftChange(
-                    "screenshotFit",
-                    event.target.value as ScreenshotFit,
-                  )
-                }
-              >
-                {fitOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-
-          <div className={styles.divider} />
-
-          <div className={styles.fieldGroupLabel}>Layout</div>
-
-          <label className={styles.field}>
-            <div className={styles.rangeHeader}>
-              <span>Phone size</span>
-              <b>{draft.phoneScale}%</b>
-            </div>
-            <input
-              type="range"
-              min={82}
-              max={110}
-              step={1}
-              value={draft.phoneScale}
-              onChange={(event) =>
-                onDraftChange("phoneScale", Number(event.target.value))
-              }
-            />
-          </label>
-
-          <label className={styles.field}>
-            <div className={styles.rangeHeader}>
-              <span>Phone angle</span>
-              <b>{draft.phoneTilt}°</b>
-            </div>
-            <input
-              type="range"
-              min={-10}
-              max={10}
-              step={1}
-              value={draft.phoneTilt}
-              onChange={(event) =>
-                onDraftChange("phoneTilt", Number(event.target.value))
-              }
-            />
-          </label>
-
-          <label className={styles.field}>
-            <div className={styles.rangeHeader}>
-              <span>Slide gap</span>
-              <b>{draft.slideGap}px</b>
-            </div>
-            <input
-              type="range"
-              min={6}
-              max={32}
-              step={1}
-              value={draft.slideGap}
-              onChange={(event) =>
-                onDraftChange("slideGap", Number(event.target.value))
-              }
-            />
-          </label>
+          <StylePanel draft={draft} onDraftChange={onDraftChange} />
         </section>
       ) : null}
 
       {/* ── EXPORT TAB ─────────────────────────────────────────────── */}
       {activeTab === "export" ? (
         <section className={styles.section}>
-          <div className={styles.exportCard}>
-            <strong>Export individual slides (ZIP)</strong>
-            <span>
-              Compresses and packages each slide as a standalone 3× high-res PNG inside a ZIP file.
-            </span>
-          </div>
-
-          <button
-            type="button"
-            className={styles.primaryButton}
-            onClick={onExportZip}
-            disabled={isZipping}
-            style={{
-              background: "linear-gradient(135deg, #00d2ff 0%, #0072ff 100%)",
-              boxShadow: "0 4px 14px rgba(0, 114, 255, 0.4)"
-            }}
-          >
-            {isZipping ? `Zipping… ${zipProgress}%` : "Download ZIP Package"}
-          </button>
-
-          <div className={styles.divider} />
-
-          <div className={styles.exportCard}>
-            <strong>Export single mockup strip</strong>
-            <span>
-              Downloads all {slides.length} slides combined side-by-side into a single wide PNG.
-            </span>
-          </div>
-
-          <button
-            type="button"
-            className={styles.secondaryButton}
-            onClick={onExport}
-            disabled={isExporting}
-          >
-            {isExporting ? "Exporting Strip…" : "Download Full Strip PNG"}
-          </button>
+          <ExportPanel
+            slideCount={slides.length}
+            isExporting={isExporting}
+            isZipping={isZipping}
+            zipProgress={zipProgress}
+            onExport={onExport}
+            onExportZip={onExportZip}
+          />
         </section>
       ) : null}
     </aside>
