@@ -7,6 +7,19 @@
   justify-content: center;
 }
 
+/* ─── SVG phone shell (new default renderer) ──────────────────────── */
+.svgShell {
+  /* 320:660 = ~0.485 aspect ratio */
+  width: 220px;
+  height: 454px;
+  transform-origin: bottom center;
+  transition: transform var(--t-mid);
+  flex-shrink: 0;
+  /* Overflow visible so side buttons (-3px) don't get clipped */
+  overflow: visible;
+}
+
+
 .phone {
   position: relative;
   width: 190px;

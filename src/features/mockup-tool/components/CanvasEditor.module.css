@@ -302,3 +302,148 @@
   border-top-color: #fff;
   animation: spin 0.7s linear infinite;
 }
+
+/* ─── Hidden file input ──────────────────────────────────────────── */
+.hiddenInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ─── Pulsing hint badge (no screenshot state) ───────────────────── */
+@keyframes badgePulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+
+.hintBadgePulse {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #ffd166;
+  padding: 5px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 209, 102, 0.35);
+  background: rgba(255, 209, 102, 0.1);
+  white-space: nowrap;
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+/* ─── Replace screenshot button ──────────────────────────────────── */
+.replaceBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-default);
+  background: var(--bg-glass);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color var(--t-fast), color var(--t-fast), background var(--t-fast);
+  position: relative;
+}
+
+.replaceBtn:hover {
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+  background: var(--bg-glass-hover);
+}
+
+/* ─── Upload drop zone (floats over phone when no screenshot) ─────── */
+@keyframes uploadPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(124, 108, 255, 0.4), inset 0 0 30px rgba(124,108,255,0.05); }
+  50%       { box-shadow: 0 0 0 8px rgba(124, 108, 255, 0), inset 0 0 40px rgba(124,108,255,0.12); }
+}
+
+@keyframes floatUp {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-5px); }
+}
+
+.uploadZone {
+  position: absolute;
+  /* Sit over the phone — inset slightly so it aligns with the SVG frame */
+  inset: 30px 10px 10px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 36px;
+  border: 2px dashed rgba(124, 108, 255, 0.6);
+  background: rgba(10, 10, 20, 0.82);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  cursor: pointer;
+  transition: border-color var(--t-fast), background var(--t-fast);
+  animation: uploadPulse 2.4s ease-in-out infinite;
+  /* Reset label styles */
+  font: inherit;
+  color: inherit;
+}
+
+.uploadZone:hover {
+  border-color: rgba(157, 143, 255, 1);
+  background: rgba(10, 10, 24, 0.92);
+  animation: none;
+  box-shadow: 0 0 0 6px rgba(124, 108, 255, 0.15), inset 0 0 40px rgba(124,108,255,0.1);
+}
+
+.uploadZoneDragOver {
+  border-color: #9d8fff !important;
+  background: rgba(124, 108, 255, 0.15) !important;
+  animation: none !important;
+  box-shadow: 0 0 0 8px rgba(124, 108, 255, 0.2), inset 0 0 60px rgba(124,108,255,0.2) !important;
+}
+
+.uploadZoneInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 16px;
+  text-align: center;
+  pointer-events: none;
+  animation: floatUp 3s ease-in-out infinite;
+}
+
+.uploadIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(124, 108, 255, 0.2);
+  border: 1.5px solid rgba(124, 108, 255, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #b8adff;
+  margin-bottom: 4px;
+}
+
+.uploadTitle {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #e8e6ff;
+  letter-spacing: -0.02em;
+}
+
+.uploadSub {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.45);
+  line-height: 1.4;
+  max-width: 140px;
+}
+
+.uploadHint {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(157, 143, 255, 0.6);
+  margin-top: 2px;
+}
+

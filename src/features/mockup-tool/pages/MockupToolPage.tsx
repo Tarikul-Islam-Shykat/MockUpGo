@@ -47,6 +47,7 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
   const [isZipping, setIsZipping] = useState(false);
   const [zipProgress, setZipProgress] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
+  const [use3D, setUse3D] = useState(true);
   const previewRef = useRef<HTMLDivElement>(null);
   const objectUrlRef = useRef<Array<string | null>>(
     Array.from({ length: MAX_SLIDES }, () => null),
@@ -226,6 +227,30 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
 
         <div className={styles.toolbarActions}>
           <span className={styles.deviceBadge}>iPhone 6.9"</span>
+          {/* 3D device toggle */}
+          <button
+            type="button"
+            className={`${styles.previewBtn} ${use3D ? styles.active3DBtn : ""}`}
+            onClick={() => setUse3D((v) => !v)}
+            title={use3D ? "Switch to flat device" : "Switch to 3D device"}
+          >
+            {use3D ? (
+              <>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                </svg>
+                3D On
+              </>
+            ) : (
+              <>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                  <line x1="12" y1="18" x2="12.01" y2="18" />
+                </svg>
+                Flat
+              </>
+            )}
+          </button>
           <button
             type="button"
             className={styles.previewBtn}
@@ -267,7 +292,9 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
             slideIndex={selectedSlideIndex}
             totalSlides={slides.length}
             screenshotUrl={screenshotUrls[selectedSlideIndex]}
+            use3D={use3D}
             onBack={handleExitCanvas}
+            onScreenshotChange={setSlideScreenshot}
             onSlideChange={updateSlide}
             onPrevSlide={() =>
               setSelectedSlideIndex((i) => Math.max(0, i - 1))

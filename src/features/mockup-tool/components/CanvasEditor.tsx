@@ -26,7 +26,9 @@ type CanvasEditorProps = {
   slideIndex: number;
   totalSlides: number;
   screenshotUrl: string | null;
+  use3D?: boolean;
   onBack: () => void;
+  onScreenshotChange: (index: number, file: File | null) => void;
   onSlideChange: <Key extends keyof SlideDraft>(
     index: number,
     field: Key,
@@ -43,77 +45,46 @@ export function CanvasEditor({
   slideIndex,
   totalSlides,
   screenshotUrl,
+  use3D = false,
   onBack,
+  onScreenshotChange,
   onSlideChange,
   onPrevSlide,
   onNextSlide,
 }: CanvasEditorProps) {
-  const slideRef = useRef<HTMLDivElement>(null);
+  const slideRef   = useRef<HTMLDivElement>(null);
+  const fileInput  = useRef<HTMLInputElement>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [isDragOver, setIsDragOver]   = useState(false);
 
-  const textDrag = useRef<DragRef>({
-    active: false,
-    startX: 0,
-    startY: 0,
-    startOffsetX: 0,
-    startOffsetY: 0,
-  });
-
-  const phoneDrag = useRef<DragRef>({
-    active: false,
-    startX: 0,
-    startY: 0,
-    startOffsetX: 0,
-    startOffsetY: 0,
-  });
+  const textDrag = useRef<DragRef>({ active:false, startX:0, startY:0, startOffsetX:0, startOffsetY:0 });
+  const phoneDrag = useRef<DragRef>({ active:false, startX:0, startY:0, startOffsetX:0, startOffsetY:0 });
 
   /* ── Text drag ──────────────────────────────────────────────────── */
   function handleTextPointerDown(e: React.PointerEvent) {
     e.currentTarget.setPointerCapture(e.pointerId);
-    textDrag.current = {
-      active: true,
-      startX: e.clientX,
-      startY: e.clientY,
-      startOffsetX: slide.textOffsetX,
-      startOffsetY: slide.textOffsetY,
-    };
+    textDrag.current = { active:true, startX:e.clientX, startY:e.clientY, startOffsetX:slide.textOffsetX, startOffsetY:slide.textOffsetY };
   }
-
   function handleTextPointerMove(e: React.PointerEvent) {
     if (!textDrag.current.active) return;
-    const dx = e.clientX - textDrag.current.startX;
-    const dy = e.clientY - textDrag.current.startY;
-    onSlideChange(slideIndex, "textOffsetX", textDrag.current.startOffsetX + dx);
-    onSlideChange(slideIndex, "textOffsetY", textDrag.current.startOffsetY + dy);
+    onSlideChange(slideIndex, "textOffsetX", textDrag.current.startOffsetX + e.clientX - textDrag.current.startX);
+    onSlideChange(slideIndex, "textOffsetY", textDrag.current.startOffsetY + e.clientY - textDrag.current.startY);
   }
-
-  function handleTextPointerUp() {
-    textDrag.current.active = false;
-  }
+  function handleTextPointerUp() { textDrag.current.active = false; }
 
   /* ── Phone drag ─────────────────────────────────────────────────── */
   function handlePhonePointerDown(e: React.PointerEvent) {
+    // Don't start drag if click is on the upload overlay
+    if ((e.target as HTMLElement).closest("[data-upload-zone]")) return;
     e.currentTarget.setPointerCapture(e.pointerId);
-    phoneDrag.current = {
-      active: true,
-      startX: e.clientX,
-      startY: e.clientY,
-      startOffsetX: slide.phoneOffsetX,
-      startOffsetY: slide.phoneOffsetY,
-    };
+    phoneDrag.current = { active:true, startX:e.clientX, startY:e.clientY, startOffsetX:slide.phoneOffsetX, startOffsetY:slide.phoneOffsetY };
   }
-
   function handlePhonePointerMove(e: React.PointerEvent) {
     if (!phoneDrag.current.active) return;
-    const dx = e.clientX - phoneDrag.current.startX;
-    const dy = e.clientY - phoneDrag.current.startY;
-    onSlideChange(slideIndex, "phoneOffsetX", phoneDrag.current.startOffsetX + dx);
-    onSlideChange(slideIndex, "phoneOffsetY", phoneDrag.current.startOffsetY + dy);
+    onSlideChange(slideIndex, "phoneOffsetX", phoneDrag.current.startOffsetX + e.clientX - phoneDrag.current.startX);
+    onSlideChange(slideIndex, "phoneOffsetY", phoneDrag.current.startOffsetY + e.clientY - phoneDrag.current.startY);
   }
-
-  function handlePhonePointerUp() {
-    phoneDrag.current.active = false;
-  }
+  function handlePhonePointerUp() { phoneDrag.current.active = false; }
 
   /* ── Reset positions ────────────────────────────────────────────── */
   function handleReset() {
@@ -122,6 +93,28 @@ export function CanvasEditor({
     onSlideChange(slideIndex, "phoneOffsetX", 0);
     onSlideChange(slideIndex, "phoneOffsetY", 0);
   }
+
+  /* ── Screenshot upload ──────────────────────────────────────────── */
+  function handleFileAccepted(file: File | null) {
+    if (file && file.type.startsWith("image/")) {
+      onScreenshotChange(slideIndex, file);
+    }
+  }
+  function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    handleFileAccepted(e.target.files?.[0] ?? null);
+    e.target.value = ""; // allow re-selecting same file
+  }
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    handleFileAccepted(e.dataTransfer.files[0] ?? null);
+  }
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDragOver(true);
+  }
+  function handleDragLeave() { setIsDragOver(false); }
 
   /* ── Export ─────────────────────────────────────────────────────── */
   async function handleExportSlide() {
@@ -135,15 +128,12 @@ export function CanvasEditor({
   }
 
   const fontFamily = getFontFamily(draft.font);
-
-  const hasDrift =
-    slide.textOffsetX !== 0 ||
-    slide.textOffsetY !== 0 ||
-    slide.phoneOffsetX !== 0 ||
-    slide.phoneOffsetY !== 0;
+  const hasDrift = slide.textOffsetX !== 0 || slide.textOffsetY !== 0 || slide.phoneOffsetX !== 0 || slide.phoneOffsetY !== 0;
+  const hasScreenshot = Boolean(screenshotUrl);
 
   return (
     <div className={styles.editor}>
+
       {/* ── Toolbar ─────────────────────────────────────────────────── */}
       <div className={styles.toolbar}>
         <button type="button" className={styles.backBtn} onClick={onBack}>
@@ -154,29 +144,37 @@ export function CanvasEditor({
         </button>
 
         <div className={styles.slideNav}>
-          <button
-            type="button"
-            className={styles.navBtn}
-            onClick={onPrevSlide}
-            disabled={slideIndex === 0}
-          >
-            ‹
-          </button>
+          <button type="button" className={styles.navBtn} onClick={onPrevSlide} disabled={slideIndex === 0}>‹</button>
           <span>Slide {slideIndex + 1} / {totalSlides}</span>
-          <button
-            type="button"
-            className={styles.navBtn}
-            onClick={onNextSlide}
-            disabled={slideIndex === totalSlides - 1}
-          >
-            ›
-          </button>
+          <button type="button" className={styles.navBtn} onClick={onNextSlide} disabled={slideIndex === totalSlides - 1}>›</button>
         </div>
 
         <div className={styles.toolbarRight}>
-          <span className={styles.hintBadge}>
-            Drag text & phone to reposition
-          </span>
+          {hasScreenshot ? (
+            <>
+              <span className={styles.hintBadge}>Drag text &amp; phone to reposition</span>
+              {/* Replace screenshot button */}
+              <label className={styles.replaceBtn} title="Replace screenshot">
+                <input
+                  ref={fileInput}
+                  type="file"
+                  accept="image/*"
+                  className={styles.hiddenInput}
+                  onChange={handleInputChange}
+                />
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                Replace screenshot
+              </label>
+            </>
+          ) : (
+            <span className={styles.hintBadgePulse}>
+              📸 Upload a screenshot to get started
+            </span>
+          )}
 
           {hasDrift && (
             <button type="button" className={styles.resetBtn} onClick={handleReset}>
@@ -206,7 +204,6 @@ export function CanvasEditor({
 
       {/* ── Canvas area ─────────────────────────────────────────────── */}
       <div className={styles.canvas}>
-        {/* This is the element captured by html-to-image */}
         <div
           ref={slideRef}
           className={styles.slideCard}
@@ -222,15 +219,12 @@ export function CanvasEditor({
               key={i}
               className={styles.decoration}
               style={{
-                width: item.size,
-                height: item.size,
+                width: item.size, height: item.size,
                 background: item.color,
                 filter: `blur(${item.blur}px)`,
                 opacity: item.opacity,
-                top: item.top,
-                right: item.right,
-                bottom: item.bottom,
-                left: item.left,
+                top: item.top, right: item.right,
+                bottom: item.bottom, left: item.left,
               }}
             />
           ))}
@@ -239,36 +233,20 @@ export function CanvasEditor({
             {/* ── Draggable text block ─────────────────────────────── */}
             <div
               className={styles.textBlock}
-              style={{
-                transform: `translate(${slide.textOffsetX}px, ${slide.textOffsetY}px)`,
-              }}
+              style={{ transform: `translate(${slide.textOffsetX}px, ${slide.textOffsetY}px)` }}
               onPointerDown={handleTextPointerDown}
               onPointerMove={handleTextPointerMove}
               onPointerUp={handleTextPointerUp}
             >
-              {/* Drag handle — excluded from export via data attr */}
-              <div
-                className={styles.dragHandle}
-                data-drag-handle="true"
-              >
-                ⠿ Text
-              </div>
-
+              <div className={styles.dragHandle} data-drag-handle="true">⠿ Text</div>
               <span
                 className={styles.badge}
-                style={{
-                  color: theme.slideText,
-                  borderColor: `${theme.accent}55`,
-                  background: `${theme.accent}20`,
-                }}
+                style={{ color: theme.slideText, borderColor: `${theme.accent}55`, background: `${theme.accent}20` }}
               >
                 {slide.badge}
               </span>
-
               <h3 className={styles.headline}>{slide.title}</h3>
-              <p className={styles.subtitle} style={{ color: theme.slideMuted }}>
-                {slide.subtitle}
-              </p>
+              <p className={styles.subtitle} style={{ color: theme.slideMuted }}>{slide.subtitle}</p>
             </div>
 
             {/* ── Draggable phone block ────────────────────────────── */}
@@ -276,18 +254,44 @@ export function CanvasEditor({
               className={styles.phoneBlock}
               style={{
                 transform: `translate(${slide.phoneOffsetX}px, ${slide.phoneOffsetY}px)`,
+                cursor: use3D ? "grab" : undefined,
               }}
               onPointerDown={handlePhonePointerDown}
               onPointerMove={handlePhonePointerMove}
               onPointerUp={handlePhonePointerUp}
             >
-              {/* Drag handle — excluded from export via data attr */}
-              <div
-                className={styles.dragHandle}
-                data-drag-handle="true"
-              >
-                ⠿ Phone
-              </div>
+              <div className={styles.dragHandle} data-drag-handle="true">⠿ Phone</div>
+
+              {/* ── Big upload zone — shown OVER phone when no screenshot ── */}
+              {!hasScreenshot && (
+                <label
+                  className={`${styles.uploadZone} ${isDragOver ? styles.uploadZoneDragOver : ""}`}
+                  data-upload-zone="true"
+                  data-drag-handle="true"
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                >
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className={styles.hiddenInput}
+                    onChange={handleInputChange}
+                  />
+                  <div className={styles.uploadZoneInner}>
+                    <div className={styles.uploadIcon}>
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                        <circle cx="8.5" cy="8.5" r="1.5" />
+                        <polyline points="21 15 16 10 5 21" />
+                      </svg>
+                    </div>
+                    <strong className={styles.uploadTitle}>Upload Screenshot</strong>
+                    <span className={styles.uploadSub}>Click here or drag &amp; drop your app screenshot</span>
+                    <span className={styles.uploadHint}>PNG · JPG · WebP</span>
+                  </div>
+                </label>
+              )}
 
               <PhoneMockup
                 screenshotUrl={screenshotUrl}
@@ -295,6 +299,7 @@ export function CanvasEditor({
                 deviceFinish={draft.deviceFinish}
                 phoneTilt={draft.phoneTilt}
                 phoneScale={100}
+                render3D={use3D}
               />
             </div>
           </div>

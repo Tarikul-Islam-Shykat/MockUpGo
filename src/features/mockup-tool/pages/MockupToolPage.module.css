@@ -142,6 +142,18 @@
   transform: translateY(-1px);
 }
 
+/* Active 3D toggle — purple accent when 3D is ON */
+.active3DBtn {
+  border-color: rgba(157, 143, 255, 0.5) !important;
+  background: rgba(157, 143, 255, 0.15) !important;
+  color: #b8adff !important;
+}
+
+.active3DBtn:hover {
+  background: rgba(157, 143, 255, 0.25) !important;
+  box-shadow: 0 0 20px rgba(157, 143, 255, 0.25) !important;
+}
+
 .exportBtn {
 
   display: inline-flex;
