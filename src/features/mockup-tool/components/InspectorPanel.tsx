@@ -4,6 +4,7 @@ import { TextPanel } from "@/features/mockup-tool/components/text-panel/TextPane
 import { StylePanel } from "@/features/mockup-tool/components/style-panel/StylePanel";
 import { ExportPanel } from "@/features/mockup-tool/components/export-panel/ExportPanel";
 import type {
+  CustomThemeSettings,
   EditorDraft,
   MockupTheme,
   ScreenshotAsset,
@@ -22,7 +23,16 @@ type InspectorPanelProps = {
   screenshotLibrary: ScreenshotAsset[];
   slideScreenshotAssetIds: Array<string | null>;
   screenshotNames: Array<string | null>;
+  customBackgroundName: string | null;
+  customThemeSettings: CustomThemeSettings;
   onThemeSelect: (themeId: string) => void;
+  onCustomBackgroundUpload: (file: File | null) => void;
+  onClearCustomBackground: () => void;
+  onCustomThemeSettingsChange: <Key extends keyof CustomThemeSettings>(
+    field: Key,
+    value: CustomThemeSettings[Key],
+  ) => void;
+  onResetCustomTheme: () => void;
   onDraftChange: <Key extends keyof EditorDraft>(
     field: Key,
     value: EditorDraft[Key],
@@ -57,7 +67,13 @@ export function InspectorPanel({
   screenshotLibrary,
   slideScreenshotAssetIds,
   screenshotNames,
+  customBackgroundName,
+  customThemeSettings,
   onThemeSelect,
+  onCustomBackgroundUpload,
+  onClearCustomBackground,
+  onCustomThemeSettingsChange,
+  onResetCustomTheme,
   onDraftChange,
   onSlideChange,
   onSelectedSlideChange,
@@ -89,7 +105,13 @@ export function InspectorPanel({
           <ThemePanel
             themes={themes}
             selectedThemeId={draft.themeId}
+            customBackgroundName={customBackgroundName}
+            customThemeSettings={customThemeSettings}
             onThemeSelect={onThemeSelect}
+            onCustomBackgroundUpload={onCustomBackgroundUpload}
+            onClearCustomBackground={onClearCustomBackground}
+            onCustomThemeSettingsChange={onCustomThemeSettingsChange}
+            onResetCustomTheme={onResetCustomTheme}
             onResetTheme={onResetTheme}
           />
         </section>

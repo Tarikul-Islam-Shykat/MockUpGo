@@ -3,10 +3,17 @@ import { useRef, useState } from "react";
 import { PhoneMockup } from "@/features/mockup-tool/components/PhoneMockup";
 import { getFontFamily } from "@/features/mockup-tool/data/fonts";
 import type {
+  CustomThemeSettings,
   EditorDraft,
   MockupTheme,
   SlideDraft,
 } from "@/features/mockup-tool/types";
+import {
+  getCustomBackgroundLayerStyle,
+  getCustomVeilLayerStyle,
+  getOverlayLayerStyle,
+  getSlideCardBackgroundStyle,
+} from "@/features/mockup-tool/utils/theme-background";
 import { exportSlidePng } from "@/features/mockup-tool/utils/export-mockup";
 
 import styles from "./CanvasEditor.module.css";
@@ -26,6 +33,8 @@ type CanvasEditorProps = {
   slideIndex: number;
   totalSlides: number;
   screenshotUrl: string | null;
+  customBackgroundUrl?: string | null;
+  customThemeSettings: CustomThemeSettings;
   use3D?: boolean;
   onBack: () => void;
   onScreenshotChange: (index: number, file: File | null) => void;
@@ -45,6 +54,8 @@ export function CanvasEditor({
   slideIndex,
   totalSlides,
   screenshotUrl,
+  customBackgroundUrl = null,
+  customThemeSettings,
   use3D = false,
   onBack,
   onScreenshotChange,
@@ -130,6 +141,7 @@ export function CanvasEditor({
   const fontFamily = getFontFamily(draft.font);
   const hasDrift = slide.textOffsetX !== 0 || slide.textOffsetY !== 0 || slide.phoneOffsetX !== 0 || slide.phoneOffsetY !== 0;
   const hasScreenshot = Boolean(screenshotUrl);
+  const hasCustomTheme = Boolean(customBackgroundUrl);
 
   return (
     <div className={styles.editor}>
@@ -208,13 +220,36 @@ export function CanvasEditor({
           ref={slideRef}
           className={styles.slideCard}
           style={{
-            background: `${theme.overlay}, ${theme.slideBackground}`,
             color: theme.slideText,
             fontFamily,
+            ...getSlideCardBackgroundStyle(
+              theme.slideBackground,
+              hasCustomTheme,
+            ),
           }}
         >
+          {hasCustomTheme ? (
+            <div
+              className={styles.customBackgroundLayer}
+              style={getCustomBackgroundLayerStyle(
+                customBackgroundUrl,
+                customThemeSettings,
+              )}
+            />
+          ) : null}
+          {hasCustomTheme ? (
+            <div
+              className={styles.overlayLayer}
+              style={getCustomVeilLayerStyle(customThemeSettings)}
+            />
+          ) : theme.overlay !== "none" ? (
+            <div
+              className={styles.overlayLayer}
+              style={getOverlayLayerStyle(theme.overlay, customThemeSettings)}
+            />
+          ) : null}
           {/* Decorations */}
-          {theme.decorations.map((item, i) => (
+          {!hasCustomTheme && theme.decorations.map((item, i) => (
             <div
               key={i}
               className={styles.decoration}

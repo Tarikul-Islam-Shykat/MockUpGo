@@ -145,6 +145,21 @@
   flex-direction: column;
 }
 
+.customBackgroundLayer {
+  position: absolute;
+  inset: -24%;
+  pointer-events: none;
+  z-index: 0;
+  transform-origin: center center;
+}
+
+.overlayLayer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
 /* ─── Decorations ────────────────────────────────────────────────── */
 .decoration {
   position: absolute;
@@ -446,4 +461,3 @@
   color: rgba(157, 143, 255, 0.6);
   margin-top: 2px;
 }
-

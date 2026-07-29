@@ -12,6 +12,7 @@ import {
   mockupThemes,
 } from "@/features/mockup-tool/data/mockup-templates";
 import type {
+  CustomThemeSettings,
   EditorDraft,
   ScreenshotAsset,
   SlideDraft,
@@ -24,6 +25,16 @@ import styles from "./MockupToolPage.module.css";
 const initialTheme = mockupThemes[0];
 const MAX_SLIDES = 10;
 
+function createDefaultCustomThemeSettings(): CustomThemeSettings {
+  return {
+    scale: 100,
+    rotation: 0,
+    offsetX: 0,
+    offsetY: 0,
+    overlayOpacity: 0,
+  };
+}
+
 function resizeSlideAssignments(
   assignments: Array<string | null>,
   nextLength: number,
@@ -33,6 +44,11 @@ function resizeSlideAssignments(
 
 type MockupToolPageProps = {
   onGoHome?: () => void;
+};
+
+type CustomBackgroundAsset = {
+  name: string;
+  url: string;
 };
 
 export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
@@ -53,6 +69,10 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
   >(
     Array.from({ length: createSlidesFromTheme(initialTheme).length }, () => null),
   );
+  const [customBackground, setCustomBackground] =
+    useState<CustomBackgroundAsset | null>(null);
+  const [customThemeSettings, setCustomThemeSettings] =
+    useState<CustomThemeSettings>(createDefaultCustomThemeSettings);
   const [isExporting, setIsExporting] = useState(false);
   const [isZipping, setIsZipping] = useState(false);
   const [zipProgress, setZipProgress] = useState(0);
@@ -60,6 +80,7 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
   const [use3D, setUse3D] = useState(true);
   const previewRef = useRef<HTMLDivElement>(null);
   const screenshotAssetsRef = useRef<ScreenshotAsset[]>([]);
+  const customBackgroundRef = useRef<CustomBackgroundAsset | null>(null);
 
   const selectedTheme =
     mockupThemes.find((theme) => theme.id === draft.themeId) ?? initialTheme;
@@ -78,10 +99,17 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
   }, [screenshotAssets]);
 
   useEffect(() => {
+    customBackgroundRef.current = customBackground;
+  }, [customBackground]);
+
+  useEffect(() => {
     return () => {
       screenshotAssetsRef.current.forEach((asset) => {
         URL.revokeObjectURL(asset.url);
       });
+      if (customBackgroundRef.current) {
+        URL.revokeObjectURL(customBackgroundRef.current.url);
+      }
     };
   }, []);
 
@@ -93,6 +121,44 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
         name: file.name,
         url: URL.createObjectURL(file),
       }));
+  }
+
+  function handleCustomBackgroundUpload(file: File | null) {
+    if (!file || !file.type.startsWith("image/")) return;
+
+    const nextBackground = {
+      name: file.name,
+      url: URL.createObjectURL(file),
+    };
+
+    setCustomBackground((current) => {
+      if (current) {
+        URL.revokeObjectURL(current.url);
+      }
+      return nextBackground;
+    });
+    setCustomThemeSettings(createDefaultCustomThemeSettings());
+  }
+
+  function handleClearCustomBackground() {
+    setCustomBackground((current) => {
+      if (current) {
+        URL.revokeObjectURL(current.url);
+      }
+      return null;
+    });
+    setCustomThemeSettings(createDefaultCustomThemeSettings());
+  }
+
+  function updateCustomThemeSettings<Key extends keyof CustomThemeSettings>(
+    field: Key,
+    value: CustomThemeSettings[Key],
+  ) {
+    setCustomThemeSettings((current) => ({ ...current, [field]: value }));
+  }
+
+  function handleResetCustomTheme() {
+    setCustomThemeSettings(createDefaultCustomThemeSettings());
   }
 
   function updateDraft<Key extends keyof EditorDraft>(
@@ -182,6 +248,7 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
       resizeSlideAssignments(current, nextSlides.length),
     );
     setSelectedSlideIndex((current) => Math.min(current, nextSlides.length - 1));
+    handleClearCustomBackground();
   }
 
   function handleAddSlide() {
@@ -353,6 +420,8 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
             slideIndex={selectedSlideIndex}
             totalSlides={slides.length}
             screenshotUrl={screenshotUrls[selectedSlideIndex]}
+            customBackgroundUrl={customBackground?.url ?? null}
+            customThemeSettings={customThemeSettings}
             use3D={use3D}
             onBack={handleExitCanvas}
             onScreenshotChange={setSlideScreenshot}
@@ -370,6 +439,8 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
             draft={draft}
             slides={slides}
             screenshotUrls={screenshotUrls}
+            customBackgroundUrl={customBackground?.url ?? null}
+            customThemeSettings={customThemeSettings}
             selectedSlideIndex={selectedSlideIndex}
             onSelectSlide={handleSelectSlide}
             previewRef={previewRef}
@@ -385,7 +456,13 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
           screenshotLibrary={screenshotAssets}
           slideScreenshotAssetIds={slideScreenshotAssetIds}
           screenshotNames={screenshotNames}
+          customBackgroundName={customBackground?.name ?? null}
+          customThemeSettings={customThemeSettings}
           onThemeSelect={handleThemeSelect}
+          onCustomBackgroundUpload={handleCustomBackgroundUpload}
+          onClearCustomBackground={handleClearCustomBackground}
+          onCustomThemeSettingsChange={updateCustomThemeSettings}
+          onResetCustomTheme={handleResetCustomTheme}
           onDraftChange={updateDraft}
           onSlideChange={updateSlide}
           onSelectedSlideChange={(index) => {
@@ -413,6 +490,8 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
           draft={draft}
           slides={slides}
           screenshotUrls={screenshotUrls}
+          customBackgroundUrl={customBackground?.url ?? null}
+          customThemeSettings={customThemeSettings}
           onClose={() => setShowPreview(false)}
         />
       )}

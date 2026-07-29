@@ -1,10 +1,17 @@
 import { PhoneMockup } from "@/features/mockup-tool/components/PhoneMockup";
 import { getFontFamily } from "@/features/mockup-tool/data/fonts";
 import type {
+  CustomThemeSettings,
   EditorDraft,
   MockupTheme,
   SlideDraft,
 } from "@/features/mockup-tool/types";
+import {
+  getCustomBackgroundLayerStyle,
+  getCustomVeilLayerStyle,
+  getOverlayLayerStyle,
+  getSlideCardBackgroundStyle,
+} from "@/features/mockup-tool/utils/theme-background";
 
 import styles from "./PreviewStage.module.css";
 
@@ -13,6 +20,8 @@ type PreviewStageProps = {
   draft: EditorDraft;
   slides: SlideDraft[];
   screenshotUrls: Array<string | null>;
+  customBackgroundUrl?: string | null;
+  customThemeSettings: CustomThemeSettings;
   selectedSlideIndex: number;
   onSelectSlide: (index: number) => void;
   previewRef: React.RefObject<HTMLDivElement | null>;
@@ -23,11 +32,14 @@ export function PreviewStage({
   draft,
   slides,
   screenshotUrls,
+  customBackgroundUrl = null,
+  customThemeSettings,
   selectedSlideIndex,
   onSelectSlide,
   previewRef,
 }: PreviewStageProps) {
   const fontFamily = getFontFamily(draft.font);
+  const hasCustomTheme = Boolean(customBackgroundUrl);
 
   return (
     <section
@@ -57,12 +69,35 @@ export function PreviewStage({
                 data-active={index === selectedSlideIndex}
                 onClick={() => onSelectSlide(index)}
                 style={{
-                  background: `${theme.overlay}, ${theme.slideBackground}`,
                   color: theme.slideText,
                   fontFamily,
+                  ...getSlideCardBackgroundStyle(
+                    theme.slideBackground,
+                    hasCustomTheme,
+                  ),
                 }}
               >
-                {theme.decorations.map((item, decorationIndex) => (
+                {hasCustomTheme ? (
+                  <div
+                    className={styles.customBackgroundLayer}
+                    style={getCustomBackgroundLayerStyle(
+                      customBackgroundUrl,
+                      customThemeSettings,
+                    )}
+                  />
+                ) : null}
+                {hasCustomTheme ? (
+                  <div
+                    className={styles.overlayLayer}
+                    style={getCustomVeilLayerStyle(customThemeSettings)}
+                  />
+                ) : theme.overlay !== "none" ? (
+                  <div
+                    className={styles.overlayLayer}
+                    style={getOverlayLayerStyle(theme.overlay, customThemeSettings)}
+                  />
+                ) : null}
+                {!hasCustomTheme && theme.decorations.map((item, decorationIndex) => (
                   <div
                     key={`${slide.id}-${decorationIndex}`}
                     className={styles.decoration}

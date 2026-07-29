@@ -44,6 +44,14 @@ export type ScreenshotAsset = {
   url: string;
 };
 
+export type CustomThemeSettings = {
+  scale: number;
+  rotation: number;
+  offsetX: number;
+  offsetY: number;
+  overlayOpacity: number;
+};
+
 export type MockupTheme = {
   id: string;
   name: string;

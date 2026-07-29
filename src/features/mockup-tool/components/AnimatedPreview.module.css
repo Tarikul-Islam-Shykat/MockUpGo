@@ -79,6 +79,21 @@
     0 0 120px rgba(124, 108, 255, 0.15);
 }
 
+.customBackgroundLayer {
+  position: absolute;
+  inset: -24%;
+  pointer-events: none;
+  z-index: 0;
+  transform-origin: center center;
+}
+
+.overlayLayer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
 /* ─── Decoration blobs ───────────────────────────────────────────── */
 .decoration {
   position: absolute;

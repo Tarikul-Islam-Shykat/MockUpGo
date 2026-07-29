@@ -4,10 +4,17 @@ import { toPng } from "html-to-image";
 import { PhoneMockup } from "@/features/mockup-tool/components/PhoneMockup";
 import { getFontFamily } from "@/features/mockup-tool/data/fonts";
 import type {
+  CustomThemeSettings,
   EditorDraft,
   MockupTheme,
   SlideDraft,
 } from "@/features/mockup-tool/types";
+import {
+  getCustomBackgroundLayerStyle,
+  getCustomVeilLayerStyle,
+  getOverlayLayerStyle,
+  getSlideCardBackgroundStyle,
+} from "@/features/mockup-tool/utils/theme-background";
 
 import styles from "./AnimatedPreview.module.css";
 
@@ -16,6 +23,8 @@ type AnimatedPreviewProps = {
   draft: EditorDraft;
   slides: SlideDraft[];
   screenshotUrls: Array<string | null>;
+  customBackgroundUrl?: string | null;
+  customThemeSettings: CustomThemeSettings;
   onClose: () => void;
 };
 
@@ -30,6 +39,8 @@ export function AnimatedPreview({
   draft,
   slides,
   screenshotUrls,
+  customBackgroundUrl = null,
+  customThemeSettings,
   onClose,
 }: AnimatedPreviewProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -47,6 +58,7 @@ export function AnimatedPreview({
   const chunksRef = useRef<Blob[]>([]);
 
   const fontFamily = getFontFamily(draft.font);
+  const hasCustomTheme = Boolean(customBackgroundUrl);
 
   /* ── Animation keys — reset on slide change ────────────────────── */
   const [animKey, setAnimKey] = useState(0);
@@ -175,17 +187,69 @@ export function AnimatedPreview({
           height: 680px;
           border-radius: 32px;
           overflow: hidden;
-          background: ${theme.slideBackground};
+          background: ${hasCustomTheme ? "#0b0d14" : theme.slideBackground};
           color: ${theme.slideText};
           font-family: ${fontFamily};
           display: flex;
           flex-direction: column;
+        `;
+        const content = document.createElement("div");
+        content.style.cssText = `
+          position: relative;
+          z-index: 1;
           padding: 28px 24px 24px;
+          display: flex;
+          flex-direction: column;
           gap: 16px;
+          height: 100%;
         `;
 
+        if (hasCustomTheme) {
+          const customLayer = document.createElement("div");
+          customLayer.style.cssText = `
+            position: absolute;
+            inset: -24%;
+            pointer-events: none;
+            z-index: 0;
+            transform-origin: center center;
+          `;
+          Object.assign(
+            customLayer.style,
+            getCustomBackgroundLayerStyle(customBackgroundUrl, customThemeSettings),
+          );
+          container.appendChild(customLayer);
+        }
+
+        if (hasCustomTheme) {
+          const overlayLayer = document.createElement("div");
+          overlayLayer.style.cssText = `
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+          `;
+          Object.assign(
+            overlayLayer.style,
+            getCustomVeilLayerStyle(customThemeSettings),
+          );
+          container.appendChild(overlayLayer);
+        } else if (theme.overlay !== "none") {
+          const overlayLayer = document.createElement("div");
+          overlayLayer.style.cssText = `
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+          `;
+          Object.assign(
+            overlayLayer.style,
+            getOverlayLayerStyle(theme.overlay, customThemeSettings),
+          );
+          container.appendChild(overlayLayer);
+        }
+
         const slide = slides[i];
-        container.innerHTML = `
+        content.innerHTML = `
           <div style="display:inline-flex;align-items:center;padding:6px 14px;border-radius:999px;border:1px solid ${theme.accent}55;background:${theme.accent}20;font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;width:fit-content;color:${theme.slideText}">
             ${slide.badge}
           </div>
@@ -203,6 +267,7 @@ export function AnimatedPreview({
               : ""
           }
         `;
+        container.appendChild(content);
         document.body.appendChild(container);
 
         try {
@@ -379,13 +444,36 @@ export function AnimatedPreview({
             ref={slideCardRef}
             className={styles.slideCard}
             style={{
-              background: `${theme.overlay}, ${theme.slideBackground}`,
               color: theme.slideText,
               fontFamily,
+              ...getSlideCardBackgroundStyle(
+                theme.slideBackground,
+                hasCustomTheme,
+              ),
             }}
           >
+            {hasCustomTheme ? (
+              <div
+                className={styles.customBackgroundLayer}
+                style={getCustomBackgroundLayerStyle(
+                  customBackgroundUrl,
+                  customThemeSettings,
+                )}
+              />
+            ) : null}
+            {hasCustomTheme ? (
+              <div
+                className={styles.overlayLayer}
+                style={getCustomVeilLayerStyle(customThemeSettings)}
+              />
+            ) : theme.overlay !== "none" ? (
+              <div
+                className={styles.overlayLayer}
+                style={getOverlayLayerStyle(theme.overlay, customThemeSettings)}
+              />
+            ) : null}
             {/* Decorations */}
-            {theme.decorations.map((item, i) => (
+            {!hasCustomTheme && theme.decorations.map((item, i) => (
               <div
                 key={i}
                 className={styles.decoration}
