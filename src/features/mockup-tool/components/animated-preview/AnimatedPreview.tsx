@@ -461,6 +461,7 @@ export function AnimatedPreview({
                   framePreset={slide.framePreset}
                   phoneTilt={draft.phoneTilt}
                   phoneScale={100}
+                  poseId={slide.poseId ?? "flat"}
                 />
               </div>
             </div>

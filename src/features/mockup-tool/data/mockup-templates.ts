@@ -477,6 +477,7 @@ export function createBlankSlide(index: number): SlideDraft {
     subtitle: "Tap to add your screenshot and edit this text",
     badge: "Screen",
     framePreset: "svg-classic",
+    poseId: "flat",
     extraTextBlocks: [],
     imageBlocks: [],
     textOffsetX: 0,

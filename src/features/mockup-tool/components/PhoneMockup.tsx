@@ -1,11 +1,10 @@
 import type {
   DeviceFinish,
   PhoneFramePreset,
+  PhonePoseId,
   ScreenshotFit,
 } from "@/features/mockup-tool/types";
-import { SvgPhoneFrame } from "./SvgPhoneFrame";
-
-import styles from "./PhoneMockup.module.css";
+import { PosedPhoneFrame } from "./phone-poses/PosedPhoneFrame";
 
 type PhoneMockupProps = {
   screenshotUrl: string | null;
@@ -14,29 +13,26 @@ type PhoneMockupProps = {
   framePreset: PhoneFramePreset;
   phoneTilt: number;
   phoneScale: number;
+  /** Per-slide 3D pose. Defaults to "flat" (original behaviour). */
+  poseId?: PhonePoseId;
 };
 
 export function PhoneMockup({
   screenshotUrl,
   screenshotFit,
   deviceFinish,
-  framePreset,
   phoneTilt,
   phoneScale,
+  poseId = "flat",
 }: PhoneMockupProps) {
-  const transform = `rotate(${phoneTilt}deg) scale(${phoneScale / 100})`;
-
-  // ── SVG frame mode (default) ─────────────────────────────────────
   return (
-    <div
-      className={styles.svgShell}
-      style={{ transform }}
-    >
-      <SvgPhoneFrame
-        finish={deviceFinish}
-        screenshotUrl={screenshotUrl}
-        screenshotFit={screenshotFit}
-      />
-    </div>
+    <PosedPhoneFrame
+      poseId={poseId}
+      phoneTilt={phoneTilt}
+      phoneScale={phoneScale}
+      finish={deviceFinish}
+      screenshotUrl={screenshotUrl}
+      screenshotFit={screenshotFit}
+    />
   );
 }

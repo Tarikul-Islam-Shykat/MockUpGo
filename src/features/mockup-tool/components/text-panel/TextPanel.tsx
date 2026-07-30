@@ -2,11 +2,13 @@ import type {
   CanvasSelection,
   EditorDraft,
   FontOption,
+  PhonePoseId,
   ScreenshotAsset,
   SlideDraft,
   SlideTextBlock,
 } from "@/features/mockup-tool/types";
 import { fontOptions } from "@/features/mockup-tool/data/fonts";
+import { phonePoseList } from "@/features/mockup-tool/components/phone-poses";
 
 import styles from "./TextPanel.module.css";
 
@@ -175,6 +177,26 @@ export function TextPanel({
       <div className={styles.fieldGroupLabel}>
         Slide {selectedSlideIndex + 1} content
       </div>
+
+      <label className={styles.field}>
+        <span>Phone pose</span>
+        <select
+          value={slide.poseId ?? "flat"}
+          onChange={(event) =>
+            onSlideChange(
+              selectedSlideIndex,
+              "poseId",
+              event.target.value as PhonePoseId,
+            )
+          }
+        >
+          {phonePoseList.map((pose) => (
+            <option key={pose.id} value={pose.id}>
+              {pose.label}
+            </option>
+          ))}
+        </select>
+      </label>
 
       <div className={styles.blockHeader}>
         <div className={styles.optionalHeading}>

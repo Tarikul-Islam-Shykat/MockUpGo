@@ -1,0 +1,69 @@
+/* ─── Flat mode (no pose) ────────────────────────────────────────────
+   Replicates the original .svgShell behaviour from PhoneMockup so that
+   the "flat" pose is pixel-identical to the old rendering.              */
+.flatShell {
+  width: 236px;
+  height: 487px;
+  transform-origin: bottom center;
+  transition: transform var(--t-mid);
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+/* ─── 3D posed mode ──────────────────────────────────────────────────
+   The perspective wrapper sets up the vanishing point.
+   All 3D transforms happen on .phoneGroup (preserve-3d).               */
+.perspectiveWrapper {
+  perspective: 900px;
+  perspective-origin: 50% 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  /* Give the wrapper the same footprint as flatShell so layout is
+     unchanged for callers that don't inspect internal dimensions. */
+  width: 236px;
+  height: 487px;
+  overflow: visible;
+}
+
+.phoneGroup {
+  position: relative;
+  width: 236px;
+  height: 487px;
+  transform-style: preserve-3d;
+  transform-origin: center center;
+  transition: transform var(--t-mid);
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+/* ─── Left edge depth panel ──────────────────────────────────────────
+   Positioned at the left edge of the phone front face, then rotated
+   90° around that edge so it becomes the left side wall in 3D space.
+   Width is set inline from the pose's edgeDepth value.                 */
+.leftEdge {
+  position: absolute;
+  /* Skip ~8 % at top & bottom to avoid clipping the rounded corners  */
+  top: 8%;
+  left: 0;
+  height: 84%;
+  /* Pivot at the left edge so the panel swings backward into the scene */
+  transform-origin: left center;
+  transform: rotateY(90deg);
+  border-radius: 5px 0 0 5px;
+  /* Subtle inner shadow gives the edge a curved metallic feel          */
+  box-shadow: inset -3px 0 6px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
+.modelShell {
+  width: 236px;
+  height: 487px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+

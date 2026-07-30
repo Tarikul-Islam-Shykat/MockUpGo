@@ -4,6 +4,8 @@ export type ScreenshotFit = "cover" | "contain";
 
 export type PhoneFramePreset = "svg-classic";
 
+export type PhonePoseId = "flat" | "lean-left" | "three-quarter";
+
 export type CustomThemeBackgroundMode = "preset" | "image" | "gradient";
 
 export type PageSizePresetId =
@@ -72,6 +74,8 @@ export type SlideDraft = {
   subtitle: string;
   badge: string;
   framePreset: PhoneFramePreset;
+  /** Per-slide 3D phone pose. Defaults to "flat" when absent. */
+  poseId?: PhonePoseId;
   extraTextBlocks: SlideTextBlock[];
   imageBlocks: SlideImageBlock[];
   textOffsetX: number;

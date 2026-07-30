@@ -306,8 +306,8 @@ export function StylePanel({
           </div>
           <input
             type="range"
-            min={-90}
-            max={90}
+            min={-180}
+            max={180}
             step={1}
             value={draft.phoneTilt}
             onChange={(event) =>

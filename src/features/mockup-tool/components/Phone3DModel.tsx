@@ -1,6 +1,6 @@
 import { Suspense, useRef } from "react";
 import * as THREE from "three";
-import { useGLTF, useTexture } from "@react-three/drei";
+import { useGLTF, useTexture, OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 
 // ─── Types ────────────────────────────────────────────────────────
@@ -64,18 +64,31 @@ export type Phone3DModelProps = {
   screenshotUrl: string | null;
   tilt: number;
   scale: number;
+  /**
+   * Optional base rotation [x, y, z] in radians that sets the pose.
+   * `tilt` is still added on top of the Y component so the phoneTilt
+   * slider coexists with the pose.
+   * Defaults to [0.05, Math.PI / 2, 0] (screen facing camera).
+   */
+  poseRotation?: [number, number, number];
 };
 
-// ─── Screen mesh — loaded via useTexture so React state drives re-render ──
 function ScreenWithTexture({ geometry, url }: { geometry: THREE.BufferGeometry; url: string }) {
   const texture = useTexture(url);
-  texture.flipY = false;
+  texture.flipY = true;
   texture.colorSpace = THREE.SRGBColorSpace;
+  texture.minFilter = THREE.LinearFilter;
+  texture.generateMipmaps = false;
   texture.needsUpdate = true;
 
   return (
     <mesh geometry={geometry}>
-      <meshStandardMaterial map={texture} roughness={0.15} metalness={0.05} />
+      <meshStandardMaterial 
+        map={texture} 
+        roughness={0.2} 
+        metalness={0.1} 
+        toneMapped={false}
+      />
     </mesh>
   );
 }
@@ -104,9 +117,12 @@ function IPhoneModel({ screenshotUrl }: { screenshotUrl: string | null }) {
           <mesh geometry={nodes.Cube014_metaL001_0.geometry} material={materials["metaL.001"]} />
           <mesh geometry={nodes.Cube014_glass002_0.geometry} material={materials["glass.002"]} />
           <mesh geometry={nodes.Cube014_apple_logo001_0.geometry} material={materials["apple_logo.001"]} />
-          {/* Screen — driven by React state via useTexture */}
+          {/* Screen — key on screenshotUrl forces Suspense remount on screenshot change */}
           {screenshotUrl ? (
-            <Suspense fallback={<ScreenEmpty geometry={nodes.Cube014_screen001_0.geometry} />}>
+            <Suspense
+              key={screenshotUrl}
+              fallback={<ScreenEmpty geometry={nodes.Cube014_screen001_0.geometry} />}
+            >
               <ScreenWithTexture geometry={nodes.Cube014_screen001_0.geometry} url={screenshotUrl} />
             </Suspense>
           ) : (
@@ -174,34 +190,42 @@ function IPhoneModel({ screenshotUrl }: { screenshotUrl: string | null }) {
 }
 
 // ─── Exported wrapper ─────────────────────────────────────────────
-export function Phone3DModel({ screenshotUrl, tilt, scale }: Phone3DModelProps) {
+export function Phone3DModel({ screenshotUrl, tilt, scale, poseRotation }: Phone3DModelProps) {
   const radTilt = (tilt * Math.PI) / 180;
   const zoomScale = scale / 100;
 
+  // Base rotation from pose; tilt is added on top of Y so they coexist.
+  // We apply radTilt directly to the Y-axis (spin) for the 3D model.
+  const base = poseRotation ?? [0.05, Math.PI / 2, 0];
+  const finalRotation: [number, number, number] = [
+    base[0],
+    base[1] + radTilt,
+    base[2],
+  ];
+
   return (
     <div
-      style={{ width: "100%", height: "100%", minHeight: "400px" }}
-      // NOTE: pointer-events on this div are intentionally left default so
-      // the CanvasEditor drag wrapper above can attach its handlers here.
+      style={{ width: "100%", height: "100%" }}
     >
       <Canvas
         camera={{ position: [0, 0, 2.5], fov: 42 }}
         gl={{ preserveDrawingBuffer: true, antialias: true, alpha: true }}
-        // FIX 1: pass pointer events through the WebGL canvas to the parent div
-        // so drag-to-position handlers on the slide card still work
-        style={{ pointerEvents: "none", background: "transparent" }}
+        style={{ pointerEvents: "auto", background: "transparent", cursor: "grab" }}
       >
         <ambientLight intensity={1.4} />
         <directionalLight position={[4, 8, 6]} intensity={2.5} castShadow />
         <directionalLight position={[-4, 4, -4]} intensity={1.0} />
         <pointLight position={[0, 2, 2]} intensity={1.5} />
 
-        {/* FIX 2: rotate model so screen faces forward (Y + π/2) */}
-        <group rotation={[0.05, radTilt + Math.PI / 2, 0]} scale={zoomScale}>
+        {/* Apply the final rotation (combining poseRotation + tilt) and scale */}
+        <group rotation={finalRotation} scale={zoomScale * 0.95}>
           <Suspense fallback={null}>
             <IPhoneModel screenshotUrl={screenshotUrl} />
           </Suspense>
         </group>
+
+        {/* Enable free mouse/touch rotation */}
+        <OrbitControls enableZoom={false} enablePan={false} />
       </Canvas>
     </div>
   );

@@ -815,6 +815,7 @@ export function PreviewStage({
                         framePreset={slide.framePreset}
                         phoneTilt={draft.phoneTilt}
                         phoneScale={draft.phoneScale}
+                        poseId={slide.poseId ?? "flat"}
                       />
                     </div>
                   </button>
