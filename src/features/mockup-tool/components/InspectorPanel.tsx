@@ -1,6 +1,7 @@
 import { ThemePanel } from "@/features/mockup-tool/components/theme-panel/ThemePanel";
 import { TextPanel } from "@/features/mockup-tool/components/text-panel/TextPanel";
 import { StylePanel } from "@/features/mockup-tool/components/style-panel/StylePanel";
+import { DevicePanel } from "@/features/mockup-tool/components/device-panel/DevicePanel";
 import { ExportPanel } from "@/features/mockup-tool/components/export-panel/ExportPanel";
 import type {
   CanvasSelection,
@@ -25,6 +26,7 @@ type InspectorPanelProps = {
   slideScreenshotAssetIds: Array<string | null>;
   screenshotNames: Array<string | null>;
   selectedCanvasItem: CanvasSelection | null;
+  onSelectCanvasItem: (item: CanvasSelection | null) => void;
   customBackgroundName: string | null;
   customThemeSettings: CustomThemeSettings;
   onThemeSelect: (themeId: string) => void;
@@ -75,6 +77,7 @@ export function InspectorPanel({
   slideScreenshotAssetIds,
   screenshotNames,
   selectedCanvasItem,
+  onSelectCanvasItem,
   customBackgroundName,
   customThemeSettings,
   onThemeSelect,
@@ -170,6 +173,20 @@ export function InspectorPanel({
         </section>
       ) : null}
 
+      {/* ── DEVICE TAB ─────────────────────────────────────────────── */}
+      {activeTab === "device" ? (
+        <section className={styles.section}>
+          <DevicePanel
+            slide={slides[selectedSlideIndex]}
+            selectedSlideIndex={selectedSlideIndex}
+            selectedCanvasItem={selectedCanvasItem}
+            onSelectCanvasItem={onSelectCanvasItem}
+            screenshotLibrary={screenshotLibrary}
+            onSlideChange={onSlideChange}
+          />
+        </section>
+      ) : null}
+
       {/* ── EXPORT TAB ─────────────────────────────────────────────── */}
       {activeTab === "export" ? (
         <section className={styles.section}>
@@ -192,6 +209,7 @@ function getTabTitle(tab: ToolTab) {
     case "theme":  return "Theme library";
     case "text":   return "Slide copy";
     case "style":  return "Visual settings";
+    case "device": return "Device canvas";
     case "export": return "Export";
   }
 }
@@ -201,6 +219,7 @@ function getTabDescription(tab: ToolTab) {
     case "theme":  return "Choose the visual direction.";
     case "text":   return "Edit content and manage draggable canvas items.";
     case "style":  return "Device and layout controls.";
+    case "device": return "Manage multiple phones, positions and angles.";
     case "export": return "Download your mockup assets.";
   }
 }

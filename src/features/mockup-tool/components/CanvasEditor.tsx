@@ -46,6 +46,7 @@ type CanvasEditorProps = {
   ) => void;
   onPrevSlide: () => void;
   onNextSlide: () => void;
+  screenshotLookup?: Map<string, { id: string; name: string; url: string }>;
 };
 
 export function CanvasEditor({
@@ -62,6 +63,7 @@ export function CanvasEditor({
   onSlideChange,
   onPrevSlide,
   onNextSlide,
+  screenshotLookup = new Map(),
 }: CanvasEditorProps) {
   const slideRef   = useRef<HTMLDivElement>(null);
   const fileInput  = useRef<HTMLInputElement>(null);
@@ -69,6 +71,46 @@ export function CanvasEditor({
 
   const textDrag = useRef<DragRef>({ active:false, startX:0, startY:0, startOffsetX:0, startOffsetY:0 });
   const phoneDrag = useRef<DragRef>({ active:false, startX:0, startY:0, startOffsetX:0, startOffsetY:0 });
+  const phoneBlockDrag = useRef<{
+    active: boolean;
+    blockId: string;
+    startX: number;
+    startY: number;
+    startOffsetX: number;
+    startOffsetY: number;
+  }>({ active: false, blockId: "", startX: 0, startY: 0, startOffsetX: 0, startOffsetY: 0 });
+
+  /* ── Custom phone blocks drag ───────────────────────────────────── */
+  function handlePhoneBlockPointerDown(e: React.PointerEvent, blockId: string, ox: number, oy: number) {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    phoneBlockDrag.current = {
+      active: true,
+      blockId,
+      startX: e.clientX,
+      startY: e.clientY,
+      startOffsetX: ox,
+      startOffsetY: oy,
+    };
+  }
+
+  function handlePhoneBlockPointerMove(e: React.PointerEvent) {
+    if (!phoneBlockDrag.current.active) return;
+    const deltaX = e.clientX - phoneBlockDrag.current.startX;
+    const deltaY = e.clientY - phoneBlockDrag.current.startY;
+    const nextX = Math.round(phoneBlockDrag.current.startOffsetX + deltaX);
+    const nextY = Math.round(phoneBlockDrag.current.startOffsetY + deltaY);
+
+    if (slide.phoneBlocks) {
+      const nextBlocks = slide.phoneBlocks.map((b) =>
+        b.id === phoneBlockDrag.current.blockId ? { ...b, x: nextX, y: nextY } : b
+      );
+      onSlideChange(slideIndex, "phoneBlocks", nextBlocks);
+    }
+  }
+
+  function handlePhoneBlockPointerUp() {
+    phoneBlockDrag.current.active = false;
+  }
 
   /* ── Text drag ──────────────────────────────────────────────────── */
   function handleTextPointerDown(e: React.PointerEvent) {
@@ -277,28 +319,64 @@ export function CanvasEditor({
             </div>
 
             {/* ── Draggable phone block ────────────────────────────── */}
-            <div
-              className={styles.phoneBlock}
-              style={{
-                transform: `translate(${slide.phoneOffsetX}px, ${slide.phoneOffsetY}px)`,
-                cursor: "grab",
-              }}
-              onPointerDown={handlePhonePointerDown}
-              onPointerMove={handlePhonePointerMove}
-              onPointerUp={handlePhonePointerUp}
-            >
-              <div className={styles.dragHandle} data-drag-handle="true">⠿ Phone</div>
+            {slide.phoneBlocks && slide.phoneBlocks.length > 0 ? (
+              slide.phoneBlocks.map((block, idx) => {
+                const blockScreenshot = block.screenshotAssetId
+                  ? screenshotLookup.get(block.screenshotAssetId)?.url ?? null
+                  : null;
 
-              <PhoneMockup
-                screenshotUrl={screenshotUrl}
-                screenshotFit={draft.screenshotFit}
-                deviceFinish={draft.deviceFinish}
-                framePreset={slide.framePreset}
-                phoneTilt={draft.phoneTilt}
-                phoneScale={100}
-                poseId={slide.poseId ?? "flat"}
-              />
-            </div>
+                return (
+                  <div
+                    key={block.id}
+                    className={styles.phoneBlock}
+                    style={{
+                      transform: `translate(${block.x}px, ${block.y}px)`,
+                      cursor: "grab",
+                      width: "236px",
+                      height: "487px",
+                    }}
+                    onPointerDown={(e) => handlePhoneBlockPointerDown(e, block.id, block.x, block.y)}
+                    onPointerMove={handlePhoneBlockPointerMove}
+                    onPointerUp={handlePhoneBlockPointerUp}
+                  >
+                    <div className={styles.dragHandle} data-drag-handle="true">⠿ Phone {idx + 1}</div>
+
+                    <PhoneMockup
+                      screenshotUrl={blockScreenshot}
+                      screenshotFit={draft.screenshotFit}
+                      deviceFinish={block.deviceFinish}
+                      framePreset={slide.framePreset}
+                      phoneTilt={block.rotation}
+                      phoneScale={block.scale}
+                      poseId={block.poseId}
+                    />
+                  </div>
+                );
+              })
+            ) : (
+              <div
+                className={styles.phoneBlock}
+                style={{
+                  transform: `translate(${slide.phoneOffsetX}px, ${slide.phoneOffsetY}px)`,
+                  cursor: "grab",
+                }}
+                onPointerDown={handlePhonePointerDown}
+                onPointerMove={handlePhonePointerMove}
+                onPointerUp={handlePhonePointerUp}
+              >
+                <div className={styles.dragHandle} data-drag-handle="true">⠿ Phone</div>
+
+                <PhoneMockup
+                  screenshotUrl={screenshotUrl}
+                  screenshotFit={draft.screenshotFit}
+                  deviceFinish={draft.deviceFinish}
+                  framePreset={slide.framePreset}
+                  phoneTilt={draft.phoneTilt}
+                  phoneScale={100}
+                  poseId={slide.poseId ?? "flat"}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>

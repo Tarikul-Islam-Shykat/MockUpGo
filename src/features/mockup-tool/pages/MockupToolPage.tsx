@@ -621,6 +621,8 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
           }}
           onRemoveSlide={handleRemoveSlide}
           previewRef={previewRef}
+          screenshotLookup={screenshotLookup}
+          onSlideChange={updateSlide}
         />
 
           <InspectorPanel
@@ -635,6 +637,7 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
           customBackgroundName={customBackground?.name ?? null}
             customThemeSettings={customThemeSettings}
           selectedCanvasItem={selectedCanvasItem}
+          onSelectCanvasItem={setSelectedCanvasItem}
           onThemeSelect={handleThemeSelect}
           onCustomBackgroundUpload={handleCustomBackgroundUpload}
           onSetGradientTheme={handleClearCustomBackground}
@@ -677,6 +680,15 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
                   selectedCanvasItem.id,
                 );
               }
+              if (selectedCanvasItem.kind === "phone-block") {
+                updateSlide(
+                  selectedCanvasItem.slideIndex,
+                  "phoneBlocks",
+                  (slides[selectedCanvasItem.slideIndex].phoneBlocks ?? []).filter(
+                    (p) => p.id !== selectedCanvasItem.id
+                  )
+                );
+              }
               setSelectedCanvasItem(null);
             }}
             onResetTheme={handleResetTheme}
@@ -700,6 +712,7 @@ export function MockupToolPage({ onGoHome }: MockupToolPageProps) {
           customBackgroundUrl={customBackground?.url ?? null}
           customThemeSettings={customThemeSettings}
           onClose={() => setShowPreview(false)}
+          screenshotLookup={screenshotLookup}
         />
       )}
     </div>

@@ -69,6 +69,12 @@ type PreviewStageProps = {
   ) => void;
   onRemoveSlide: (index: number) => void;
   previewRef: React.RefObject<HTMLDivElement | null>;
+  screenshotLookup?: Map<string, { id: string; name: string; url: string }>;
+  onSlideChange?: <Key extends keyof SlideDraft>(
+    index: number,
+    field: Key,
+    value: SlideDraft[Key],
+  ) => void;
 };
 
 export function PreviewStage({
@@ -90,6 +96,8 @@ export function PreviewStage({
   onImageBlockResize,
   onRemoveSlide,
   previewRef,
+  screenshotLookup = new Map(),
+  onSlideChange,
 }: PreviewStageProps) {
   const fontFamily = getFontFamily(draft.font);
   const canvasRef = useRef<HTMLDivElement | null>(null);
@@ -155,6 +163,15 @@ export function PreviewStage({
     scale: number;
   } | null>(null);
   const imageDragRef = useRef<{
+    slideIndex: number;
+    blockId: string;
+    startX: number;
+    startY: number;
+    blockX: number;
+    blockY: number;
+    scale: number;
+  } | null>(null);
+  const phoneBlockDragRef = useRef<{
     slideIndex: number;
     blockId: string;
     startX: number;
@@ -397,6 +414,55 @@ export function PreviewStage({
       event.stopPropagation();
     }
     phoneDragRef.current = null;
+  }
+
+  function handlePhoneBlockPointerDown(
+    event: React.PointerEvent<HTMLDivElement>,
+    slideIndex: number,
+    blockId: string,
+    x: number,
+    y: number,
+    scale: number,
+  ) {
+    event.stopPropagation();
+    onSelectSlide(slideIndex);
+    onSelectCanvasItem({ kind: "phone-block", slideIndex, id: blockId });
+    event.currentTarget.setPointerCapture(event.pointerId);
+    phoneBlockDragRef.current = {
+      slideIndex,
+      blockId,
+      startX: event.clientX,
+      startY: event.clientY,
+      blockX: x,
+      blockY: y,
+      scale,
+    };
+  }
+
+  function handlePhoneBlockPointerMove(event: React.PointerEvent<HTMLDivElement>) {
+    if (!phoneBlockDragRef.current || !onSlideChange) return;
+    const totalScale = Math.max(0.0001, phoneBlockDragRef.current.scale);
+    const deltaX = (event.clientX - phoneBlockDragRef.current.startX) / totalScale;
+    const deltaY = (event.clientY - phoneBlockDragRef.current.startY) / totalScale;
+    const nextX = Math.round(phoneBlockDragRef.current.blockX + deltaX);
+    const nextY = Math.round(phoneBlockDragRef.current.blockY + deltaY);
+
+    const slide = slides[phoneBlockDragRef.current.slideIndex];
+    if (slide && slide.phoneBlocks) {
+      const nextBlocks = slide.phoneBlocks.map((b) =>
+        b.id === phoneBlockDragRef.current!.blockId
+          ? { ...b, x: nextX, y: nextY }
+          : b
+      );
+      onSlideChange(phoneBlockDragRef.current.slideIndex, "phoneBlocks", nextBlocks);
+    }
+  }
+
+  function handlePhoneBlockPointerUp(event: React.PointerEvent<HTMLDivElement>) {
+    if (phoneBlockDragRef.current) {
+      event.stopPropagation();
+    }
+    phoneBlockDragRef.current = null;
   }
 
   function handleImagePointerDown(
@@ -789,35 +855,85 @@ export function PreviewStage({
                       </div>
                     ))}
 
-                    <div
-                      className={styles.deviceWrap}
-                      data-draggable={index === selectedSlideIndex}
-                      onPointerDown={(event) =>
-                        handlePhonePointerDown(
-                          event,
-                          index,
-                          slide.phoneOffsetX,
-                          slide.phoneOffsetY,
-                          interactionScale,
-                        )
-                      }
-                      onPointerMove={handlePhonePointerMove}
-                      onPointerUp={handlePhonePointerUp}
-                      onPointerCancel={handlePhonePointerUp}
-                      style={{
-                        transform: `translate(${slide.phoneOffsetX}px, ${slide.phoneOffsetY}px)`,
-                      }}
-                    >
-                      <PhoneMockup
-                        screenshotUrl={screenshotUrls[index]}
-                        screenshotFit={draft.screenshotFit}
-                        deviceFinish={draft.deviceFinish}
-                        framePreset={slide.framePreset}
-                        phoneTilt={draft.phoneTilt}
-                        phoneScale={draft.phoneScale}
-                        poseId={slide.poseId ?? "flat"}
-                      />
-                    </div>
+                    {slide.phoneBlocks && slide.phoneBlocks.length > 0 ? (
+                      slide.phoneBlocks.map((block) => {
+                        const blockScreenshot = block.screenshotAssetId
+                          ? screenshotLookup.get(block.screenshotAssetId)?.url ?? null
+                          : null;
+                        const isSelected =
+                          selectedCanvasItem?.kind === "phone-block" &&
+                          selectedCanvasItem.slideIndex === index &&
+                          selectedCanvasItem.id === block.id;
+
+                        return (
+                          <div
+                            key={block.id}
+                            className={styles.deviceWrap}
+                            data-draggable={index === selectedSlideIndex}
+                            data-selected={isSelected}
+                            onPointerDown={(event) =>
+                              handlePhoneBlockPointerDown(
+                                event,
+                                index,
+                                block.id,
+                                block.x,
+                                block.y,
+                                interactionScale,
+                              )
+                            }
+                            onPointerMove={handlePhoneBlockPointerMove}
+                            onPointerUp={handlePhoneBlockPointerUp}
+                            onPointerCancel={handlePhoneBlockPointerUp}
+                            style={{
+                              transform: `translate(${block.x}px, ${block.y}px)`,
+                              /* Reset standard layout scaling wrapper to rely on block scale */
+                              width: "236px",
+                              height: "487px",
+                            }}
+                          >
+                            <PhoneMockup
+                              screenshotUrl={blockScreenshot}
+                              screenshotFit={draft.screenshotFit}
+                              deviceFinish={block.deviceFinish}
+                              framePreset={slide.framePreset}
+                              phoneTilt={block.rotation}
+                              phoneScale={block.scale}
+                              poseId={block.poseId}
+                            />
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div
+                        className={styles.deviceWrap}
+                        data-draggable={index === selectedSlideIndex}
+                        onPointerDown={(event) =>
+                          handlePhonePointerDown(
+                            event,
+                            index,
+                            slide.phoneOffsetX,
+                            slide.phoneOffsetY,
+                            interactionScale,
+                          )
+                        }
+                        onPointerMove={handlePhonePointerMove}
+                        onPointerUp={handlePhonePointerUp}
+                        onPointerCancel={handlePhonePointerUp}
+                        style={{
+                          transform: `translate(${slide.phoneOffsetX}px, ${slide.phoneOffsetY}px)`,
+                        }}
+                      >
+                        <PhoneMockup
+                          screenshotUrl={screenshotUrls[index]}
+                          screenshotFit={draft.screenshotFit}
+                          deviceFinish={draft.deviceFinish}
+                          framePreset={slide.framePreset}
+                          phoneTilt={draft.phoneTilt}
+                          phoneScale={draft.phoneScale}
+                          poseId={slide.poseId ?? "flat"}
+                        />
+                      </div>
+                    )}
                   </button>
                 </div>
               );

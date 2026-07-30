@@ -1,0 +1,160 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field span {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--c-text-muted);
+}
+
+.field select,
+.field input {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: #fff;
+  padding: 10px 12px;
+  font-size: 0.88rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color var(--t-fast);
+}
+
+.field select:focus,
+.field input:focus {
+  border-color: var(--c-accent);
+}
+
+.actionButton {
+  display: block;
+  width: 100%;
+  background: var(--c-accent);
+  color: #000;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 0.88rem;
+  text-align: center;
+  cursor: pointer;
+  transition: opacity var(--t-fast);
+}
+
+.actionButton:hover {
+  opacity: 0.9;
+}
+
+.secondaryButton {
+  display: block;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 0.82rem;
+  text-align: center;
+  cursor: pointer;
+  transition: background var(--t-fast);
+}
+
+.secondaryButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.fieldGroupLabel {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--c-accent);
+  margin-top: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 6px;
+}
+
+.blockList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.blockCard {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.blockCard[data-active="true"] {
+  border-color: var(--c-accent);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.blockHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.blockHeader strong {
+  font-size: 0.82rem;
+  color: #fff;
+}
+
+.removeButton {
+  background: none;
+  border: none;
+  color: #ff4a4a;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+}
+
+.removeButton:hover {
+  text-decoration: underline;
+}
+
+.rangeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2px;
+}
+
+.rangeHeader span {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--c-text-muted);
+}
+
+.rangeHeader b {
+  font-size: 0.82rem;
+  color: #fff;
+}
+
+.emptyState {
+  padding: 24px 12px;
+  border: 2px dashed rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  text-align: center;
+  color: var(--c-text-muted);
+  font-size: 0.82rem;
+}

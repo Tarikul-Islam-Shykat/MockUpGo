@@ -21,7 +21,7 @@ export type PageSizePresetId =
   | "portrait-9-16"
   | "portrait-10-21";
 
-export type ToolTab = "theme" | "text" | "style" | "export";
+export type ToolTab = "theme" | "text" | "style" | "device" | "export";
 
 export type FontOption =
   | "inter"
@@ -68,6 +68,17 @@ export type SlideImageBlock = {
   aspectRatio: number;
 };
 
+export type SlidePhoneBlock = {
+  id: string;
+  x: number;
+  y: number;
+  scale: number;
+  rotation: number;
+  poseId: PhonePoseId;
+  deviceFinish: DeviceFinish;
+  screenshotAssetId: string | null;
+};
+
 export type SlideDraft = {
   id: string;
   title: string;
@@ -78,6 +89,7 @@ export type SlideDraft = {
   poseId?: PhonePoseId;
   extraTextBlocks: SlideTextBlock[];
   imageBlocks: SlideImageBlock[];
+  phoneBlocks?: SlidePhoneBlock[];
   textOffsetX: number;
   textOffsetY: number;
   phoneOffsetX: number;
@@ -89,7 +101,8 @@ export type SlideDraft = {
 export type CanvasSelection =
   | { kind: "main-text"; slideIndex: number }
   | { kind: "text-block"; slideIndex: number; id: string }
-  | { kind: "image-block"; slideIndex: number; id: string };
+  | { kind: "image-block"; slideIndex: number; id: string }
+  | { kind: "phone-block"; slideIndex: number; id: string };
 
 export type ScreenshotAsset = {
   id: string;

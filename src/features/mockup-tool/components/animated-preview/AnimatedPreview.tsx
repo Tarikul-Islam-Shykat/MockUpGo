@@ -30,6 +30,7 @@ type AnimatedPreviewProps = {
   customBackgroundUrl?: string | null;
   customThemeSettings: CustomThemeSettings;
   onClose: () => void;
+  screenshotLookup?: Map<string, { id: string; name: string; url: string }>;
 };
 
 type SlideState = "entering" | "visible" | "exiting" | "hidden";
@@ -48,6 +49,7 @@ export function AnimatedPreview({
   customBackgroundUrl = null,
   customThemeSettings,
   onClose,
+  screenshotLookup = new Map(),
 }: AnimatedPreviewProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [slideState, setSlideState] = useState<SlideState>("entering");
@@ -443,27 +445,62 @@ export function AnimatedPreview({
                 </div>
               ))}
 
-              <div
-                className={styles.phoneWrap}
-                data-anim={
-                  slideState === "entering" || slideState === "visible"
-                    ? "true"
-                    : "false"
-                }
-                style={{
-                  transform: `translate(${slide.phoneOffsetX}px, ${slide.phoneOffsetY}px)`,
-                }}
-              >
-                <PhoneMockup
-                  screenshotUrl={screenshotUrls[currentIndex]}
-                  screenshotFit={draft.screenshotFit}
-                  deviceFinish={draft.deviceFinish}
-                  framePreset={slide.framePreset}
-                  phoneTilt={draft.phoneTilt}
-                  phoneScale={100}
-                  poseId={slide.poseId ?? "flat"}
-                />
-              </div>
+              {slide.phoneBlocks && slide.phoneBlocks.length > 0 ? (
+                slide.phoneBlocks.map((block) => {
+                  const blockScreenshot = block.screenshotAssetId
+                    ? screenshotLookup.get(block.screenshotAssetId)?.url ?? null
+                    : null;
+
+                  return (
+                    <div
+                      key={block.id}
+                      className={styles.phoneWrap}
+                      data-anim={
+                        slideState === "entering" || slideState === "visible"
+                          ? "true"
+                          : "false"
+                      }
+                      style={{
+                        transform: `translate(${block.x}px, ${block.y}px)`,
+                        width: "236px",
+                        height: "487px",
+                      }}
+                    >
+                      <PhoneMockup
+                        screenshotUrl={blockScreenshot}
+                        screenshotFit={draft.screenshotFit}
+                        deviceFinish={block.deviceFinish}
+                        framePreset={slide.framePreset}
+                        phoneTilt={block.rotation}
+                        phoneScale={block.scale}
+                        poseId={block.poseId}
+                      />
+                    </div>
+                  );
+                })
+              ) : (
+                <div
+                  className={styles.phoneWrap}
+                  data-anim={
+                    slideState === "entering" || slideState === "visible"
+                      ? "true"
+                      : "false"
+                  }
+                  style={{
+                    transform: `translate(${slide.phoneOffsetX}px, ${slide.phoneOffsetY}px)`,
+                  }}
+                >
+                  <PhoneMockup
+                    screenshotUrl={screenshotUrls[currentIndex]}
+                    screenshotFit={draft.screenshotFit}
+                    deviceFinish={draft.deviceFinish}
+                    framePreset={slide.framePreset}
+                    phoneTilt={draft.phoneTilt}
+                    phoneScale={100}
+                    poseId={slide.poseId ?? "flat"}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
